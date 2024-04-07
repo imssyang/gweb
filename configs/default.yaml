@@ -1,0 +1,10 @@
+debug: true
+service:
+  address: ":5000"
+  timeout:
+    read: 10s
+    write: 10s
+template:
+  files:
+    - "*.tmpl"
+    - "*.html"

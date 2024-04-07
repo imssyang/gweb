@@ -1,0 +1,9 @@
+debug: false
+service:
+  address: ":5005"
+  timeout:
+    read: 15s
+    write: 15s
+template:
+  files:
+    - "*.tmpl"

@@ -1,0 +1,3 @@
+[submodule "web/formatify"]
+	path = web/formatify
+	url = https://github.com/imssyang/formatify.git

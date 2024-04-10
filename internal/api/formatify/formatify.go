@@ -21,48 +21,46 @@ func Register(engine *gin.Engine) {
 		RouterGroup: engine.Group(Name),
 	}
 	router.index()
-	router.command()
+	router.mode()
 }
 
 func (r *Router) index() {
 	r.Engine.GET("/"+Name, func(c *gin.Context) {
 		c.HTML(http.StatusOK, Name+"/index", gin.H{})
 	})
-	//log.Println(PycmdDumps("/sss/test -a 1 -b 2 -c 3 adsf", 2))
 }
 
-func (r *Router) command() {
-	const Prefix = "/" + Name + "/command"
-
-	r.Engine.POST(Prefix+"/contract", func(c *gin.Context) {
+func (r *Router) mode() {
+	r.Engine.POST("/"+Name+"/:mode/:action", func(c *gin.Context) {
 		body, err := io.ReadAll(c.Request.Body)
 		if err != nil {
-			c.String(500, "Internal Server Error")
+			c.String(http.StatusInternalServerError, "Internal Server Error")
 			return
 		}
 
-		formated, err := PycmdDumps(string(body), 0)
-		if err != nil {
-			c.String(501, "PycmdDumps Error %v", err)
-			return
-		}
-		fmt.Println(3333, body, "ddd", string(body), "abcd", formated)
-		c.String(200, formated)
-	})
+		mode := c.Param("mode")
+		switch mode {
+		case "json", "python", "command":
+			action := c.Param("action")
+			indent := 0
+			if action == "contract" {
+				indent = 0
+			} else if action == "expand" {
+				indent = map[string]int{
+					"json":    4,
+					"python":  1,
+					"command": 2,
+				}[mode]
+			}
 
-	r.Engine.POST(Prefix+"/expand", func(c *gin.Context) {
-		body, err := io.ReadAll(c.Request.Body)
-		if err != nil {
-			c.String(500, "Internal Server Error")
-			return
+			formated, err := PyfmtDumps(mode, string(body), indent)
+			if err != nil {
+				c.String(http.StatusServiceUnavailable, "PyfmtDumps error %v", err)
+				return
+			}
+			c.String(http.StatusOK, formated)
+		default:
+			fmt.Printf("Unsupport %v mode!\n", mode)
 		}
-
-		formated, err := PycmdDumps(string(body), 2)
-		if err != nil {
-			c.String(501, "PycmdDumps Error %v", err)
-			return
-		}
-		fmt.Println(1234, body, "ddd", string(body), "abcd", formated)
-		c.String(200, formated)
 	})
 }

@@ -31,7 +31,7 @@ func walkNames(fsys fs.FS) []string {
 }
 
 func Init(engine *gin.Engine) {
-	for _, name := range []string{"formatify"} {
+	for _, name := range []string{"formatify/dist"} {
 		sub, _ := fs.Sub(files, name)
 		log.Zap.Debugln("web/"+name+":", walkNames(sub))
 		engine.StaticFS("/"+name, http.FS(sub))

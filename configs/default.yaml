@@ -1,6 +1,6 @@
 debug: true
 service:
-  address: ":5000"
+  address: ":5005"
   timeout:
     read: 10s
     write: 10s

@@ -26,5 +26,5 @@ func (r *Router) index() {
 	r.Engine.GET("/"+Name, func(c *gin.Context) {
 		c.HTML(http.StatusOK, Name+"/index", gin.H{})
 	})
-	log.Println(Command())
+	log.Println(PycmdDumps("/sss/test -a 1 -b 2 -c 3 adsf", 2))
 }

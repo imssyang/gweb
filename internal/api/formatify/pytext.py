@@ -2,42 +2,44 @@ import ast
 import io
 import json
 import pprint
+from typing import Any
+from typing import Optional
 
 
 class BaseText:
-    def is_json(self, data):
+    def is_json(self, data: str) -> bool:
         try:
             json.loads(s=data)
             return True
-        except Exception as e:
+        except:
             return False
 
-    def json2ast(self, data, pivotal = False):
+    def json2ast(self, data: str) -> Any:
         try:
             return json.loads(s=data)
-        except json.decoder.JSONDecodeError as e:
+        except:
             return None
 
-    def ast2json(self, data):
+    def ast2json(self, data: Any) -> Optional[str]:
         try:
             return json.dumps(data, ensure_ascii=False)
-        except Exception as e:
+        except:
             return None
 
-    def str2ast(self, data, pivotal = False):
+    def str2ast(self, data: str) -> Any:
         try:
             return ast.literal_eval(data)
-        except SyntaxError as e:
+        except:
             return None
 
 
 class JsonText(BaseText):
-    def __init__(self, data):
+    def __init__(self, data: Any):
         super().__init__()
         if isinstance(data, str):
             d = self.json2ast(data)
             if d is None:
-                d = self.str2ast(data, True)
+                d = self.str2ast(data)
                 if d is None:
                     self.data = None
                     return
@@ -45,25 +47,26 @@ class JsonText(BaseText):
         else:
             self.data = data
 
-    def dumps(self, indent: int):
+    def dumps(self, indent: int) -> Optional[str]:
         try:
-            return json.dumps(
+            indent = None if indent <= 0 else indent
+            r = json.dumps(
                 self.data,
                 ensure_ascii=False,
-                indent=None if indent == 0 else indent,
+                indent=indent,
             )
-        except Exception as e:
-            print(f"[PYTHON] JsonText dumps: {e}")
+            return r if self.data else None
+        except:
             return None
 
 class AstText(BaseText):
-    def __init__(self, data):
+    def __init__(self, data: Any):
         super().__init__()
         if isinstance(data, str):
             if self.is_json(data):
                 self.data = data
             else:
-                d = self.str2ast(data, True)
+                d = self.str2ast(data)
                 if d is None:
                     self.data = None
                     return
@@ -71,13 +74,13 @@ class AstText(BaseText):
         else:
             self.data = self.ast2json(data)
 
-    def dumps(self, indent: int):
+    def dumps(self, indent: int) -> Optional[str]:
         try:
             if indent:
                 d = json.loads(s=self.data)
                 with io.StringIO() as buf:
                     pp = pprint.PrettyPrinter(
-                        indent=None if indent == 0 else indent,
+                        indent=indent,
                         compact=False,
                         stream=buf,
                     )
@@ -86,6 +89,5 @@ class AstText(BaseText):
             else:
                 d = json.loads(s=self.data)
                 return str(d)
-        except Exception as e:
-            print(f"[PYTHON] AstText dumps: {e}")
+        except:
             return None

@@ -1,8 +1,10 @@
+import traceback
+from typing import Optional
 from pycmd import Command
 from pytext import AstText, JsonText
 
 
-def dumps(mode, data, indent):
+def dumps(mode: str, data: str, indent: int) -> Optional[str]:
     try:
         if mode == "json":
             return JsonText(data).dumps(indent)
@@ -11,8 +13,9 @@ def dumps(mode, data, indent):
         elif mode == "command":
             return Command(data).dumps(indent)
         else:
-            print(f"[PYTHON] Unsupport {mode} mode.")
+            print(f"[PYFMT] Unsupport {mode} mode.")
             return None
-    except Exception as e:
-        print(f"[PYTHON] dumps: {e}")
+    except:
+        tb_info = traceback.format_exc()
+        print(f"[PYFMT] dumps> {tb_info}")
         return None

@@ -11,7 +11,7 @@ size_t PyfmtDumps(const char* mode, char* data, size_t size, size_t indent)
 	py::module_ pyfmt = py::module_::import("pyfmt");
 	py::object result = pyfmt.attr("dumps")(mode, data, indent);
 	if (result.is_none()) {
-		py::print("[CGO] error result is none for", data);
+		py::print("[CGO] error result is none.");
         return -1;
     }
 	std::string formated = result.cast<std::string>();

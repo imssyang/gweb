@@ -2,9 +2,12 @@ from pytext import JsonText, AstText
 
 
 if __name__ == "__main__":
-    j = '{"a":True,"b":[1,2,3]}'
-    #j = '{"name": "Alice", "age": {"a": 1, "b": 2}, "phone": "abc,}'
-    print(JsonText(j).pretty())
-    print(JsonText(j).compact())
-    print(AstText(j).pretty())
-    print(AstText(j).compact())
+    #j = '{"a":True,"b":[1,2,3]}'
+    #j = '{"name": "Alice", "age": {"a": 1, "b": 2}, "phone": "abc"}'
+    j = "{'api_v': 'V2', 'code': 0, 'data': {'app_id': '', 'buid': 'Intl:IUP:SD', 'callback': 'http://vxcode-tailor-api.bilibili.co/api/v1/callback/transcode?id=w04|tts20240410000000000001438581882-xcode-4-0&retry=0', 'cmd': 'python3.7 /data/app/vxcode-swarm-tailor/source/app/main.pyc', 'cost': {}, 'end_time': '0001-01-01T00:00:00Z', 'envs': {'DEPLOY_ENV': 'prod', 'VXCODE_REPORT_VENC_QUALITY': '1', 'VXCODE_SWARM_ENV': 'prod'}, 'error': {}, 'gc_time': 86400, 'grace_period': 0, 'hosts': [], 'image': 'vxcode-swarm-tailor', 'platform': {}, 'priority': 1, 'queen': 'idc_jscs-k8s-cell03_private_cpu_amd', 'random_port': False, 'recv_time': '0001-01-01T00:00:00Z', 'request': {'buid': 'Intl:IUP:SD', 'flow': 'xcode', 'has_hdfs': True, 'hdfs_workspace': 'hdfs:///vxcode/bili_vxcode_workspace/2024/04/10/tts20240410000000000001438581882', 'object': {'md5': 'a64e5562c4ef66a77801bc837a2858d4', 'size': 13945318, 'slice_compensate': {'1': -1}, 'url': 'hdfs:///vxcode/bili_vxcode_workspace/2024/04/10/tts20240410000000000001438581882/S004.mp4'}, 'profiles': [{'arch': 'cpu', 'container': {'duration': 0, 'format': 'mp4', 'segment_time': 0, 'start_time': 0}, 'profile': 'ai_audit_hd', 'save_to': 'upos://iupxcodeboss/sd/n240410addnaouo9qxzpdpz3h5ii1919', 'segment_idx': 4, 'video': {'encode': {'bili_preset': 'pure_performance', 'bit_rate': 267832, 'bufsize': 12000000, 'codec': 'x264', 'crf': 27, 'dynamic_range': 'ignore', 'frame_rate': 1, 'gop_max': 1, 'gop_min': 1, 'height': 238, 'maxrate': 12000000, 'vframes': 5712, 'vsync': 0, 'width': 426}, 'filter': {}}}], 'red_channel': False, 'slow_retry': False, 'task_id': 'tts20240410000000000001438581882', 'transcode_type': 'video', 'upload_info': {}, 'upos_workspace': 'upos://stmp/tts20240410000000000001438581882', 'vp': 4}, 'resource': {'nvdec': 0, 'nvenc': 0, 'optional_cpu': 12000, 'optional_mem': 3072, 'optional_storage': 4000, 'required_cpu': 3000, 'required_gpu': 0, 'required_mem': 1024, 'required_storage': 1000, 'shared_mem': 0, 'vcuda_core': 0, 'vcuda_memory': 0}, 'route': {'allow_edge': False, 'allow_fuse_sidecar': None, 'bypass_mode': False, 'edge_cluster': '', 'for_acceptance': False, 'force_gpu': False, 'gpu_type': 'cuda', 'is_privileged': False, 'mode': '', 'node_labels': {'exclude': None, 'include': None}, 'nodes': None, 'prefer_gpu': False, 'priority': 1, 'require_fuse': False, 'role': '', 'users': [], 'vendor_stored': False, 'vgpu_type': ''}, 'sch_time': '0001-01-01T00:00:00Z', 'stage': '', 'start_time': '0001-01-01T00:00:00Z', 'status': 'Scheduled', 'task_id': 'tts20240410000000000001438581882', 'type': 'CPU', 'user': 'video.bili-vxcode.vxcode-tailor-scheduler', 'version': 'v1.0.7-nyx', 'vols': [{'container': '/var/run/lancer', 'host': '/var/run/lancer', 'perm': 'rw'}], 'vxcode_id': 'gvx20240410113959.602605856-3dac6', 'worker_id': 0}, 'error': None}"
+    #print(AstText(j).dumps(0))
+    #print(AstText(j).dumps(2))
+    #print(JsonText(j).dumps(0))
+    print(JsonText(j).dumps(4))
+
+

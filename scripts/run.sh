@@ -8,6 +8,11 @@ pymain() {
   python ${PROJECT_DIR}/tests/pymain.py
 }
 
+pytest() {
+  PYTHONPATH=${PYTHONPATH}:${PROJECT_DIR}/third_party:${PROJECT_DIR}/internal/api/formatify \
+  python ${PROJECT_DIR}/tests/test_pytext.py
+}
+
 gomain() {
   LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${PYTHON_HOME}/lib \
   PYTHONPATH=${PYTHONPATH}:${PROJECT_DIR}/third_party:${PROJECT_DIR}/internal/api/formatify \
@@ -15,3 +20,4 @@ gomain() {
 }
 
 gomain "$@"
+#pytest "$@"

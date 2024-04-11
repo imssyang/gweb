@@ -53,12 +53,12 @@ func (r *Router) mode() {
 				}[mode]
 			}
 
-			formated, err := PyfmtDumps(mode, string(body), indent)
+			formatted, err := PyfmtDumps(mode, string(body), indent)
 			if err != nil {
 				c.String(http.StatusBadRequest, "PyfmtDumps error %v", err)
 				return
 			}
-			c.String(http.StatusOK, formated)
+			c.String(http.StatusOK, formatted)
 		default:
 			fmt.Printf("Unsupport %v mode!\n", mode)
 		}

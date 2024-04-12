@@ -1,4 +1,4 @@
-debug: true
+debug: false
 service:
   address: ":5005"
   timeout:

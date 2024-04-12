@@ -1,5 +1,7 @@
 **/*/__pycache__/
 **/*/node_modules/
+deploy/*
+!deploy/gweb.yaml
 public/plugins/
 public/img/formatify.svg
 test/gweb

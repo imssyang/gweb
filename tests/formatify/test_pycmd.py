@@ -2,7 +2,7 @@ import unittest
 from formatify import Command
 
 
-class FormatifyTestCase(unittest.TestCase):
+class PycmdTestCase(unittest.TestCase):
     FFPROBE_CMD = 'ffprobe -hide_banner -select_streams v:0 -of json 123.mp4'
 
     def test_command(self):

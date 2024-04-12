@@ -1,21 +1,29 @@
 .DEFAULT: env
 .PYONY: clean
 
+OS_TYPE := $(shell uname)
 PROJECT_DIR=$(shell pwd)
 PYTHON_HOME=$(shell pyenv prefix)
 PYTHON_VER=$(shell ls ${PYTHON_HOME}/include)
+
+ifeq ($(OS_TYPE), Linux)
+	export LD_LIBRARY_PATH=${PYTHON_HOME}/lib
+else ifeq ($(OS_TYPE), Darwin)
+	export BASE_LDFLAGS=-Wl,-no_warn_duplicate_libraries
+endif
+
 export CGO_CFLAGS=\
 	-I${PYTHON_HOME}/include/${PYTHON_VER}
 export CGO_CXXFLAGS=\
 	-I${PYTHON_HOME}/include/${PYTHON_VER} \
 	-I${PROJECT_DIR}/third_party
-export CGO_LDFLAGS=\
+export CGO_LDFLAGS=${BASE_LDFLAGS} \
 	-L${PYTHON_HOME}/lib \
 	-l${PYTHON_VER}
-export LD_LIBRARY_PATH=${PYTHON_HOME}/lib
 export PYTHONPATH=${PROJECT_DIR}/internal/api
 
 env:
+	@echo OS_TYPE=$(OS_TYPE)
 	@echo PROJECT_DIR=$(PROJECT_DIR)
 	@echo PYTHON_HOME=$(PYTHON_HOME)
 	@echo PYTHON_VER=$(PYTHON_VER)
@@ -23,21 +31,29 @@ env:
 	@echo CGO_CFLAGS=$(CGO_CFLAGS)
 	@echo CGO_CXXFLAGS=$(CGO_CXXFLAGS)
 	@echo CGO_LDFLAGS=$(CGO_LDFLAGS)
+ifeq ($(OS_TYPE), Linux)
 	@echo LD_LIBRARY_PATH=$(LD_LIBRARY_PATH)
+else ifeq ($(OS_TYPE), Darwin)
+	@echo DYLD_LIBRARY_PATH=$(DYLD_LIBRARY_PATH)
+endif
 
 run:
 	go run cmd/gweb.go -p 5015 --debug
 
 deploy: env
+	python -m compileall -b internal/api/formatify
+	rsync -av --include="*/" --include="*.pyc" --exclude="*" \
+		internal/api/formatify deploy
 	go build -v -o deploy/gweb cmd/gweb.go
+ifeq ($(OS_TYPE), Linux)
 	patchelf --set-rpath '$$ORIGIN' deploy/gweb
-	python -m compileall internal/api/formatify
 	cp -v ${PYTHON_HOME}/lib/lib${PYTHON_VER}.so.1.0 deploy
-	rsync -av --include="*/" --include="*.pyc" --exclude="*" internal/api/formatify deploy
+endif
 
 test:
 	python -m unittest -v tests/formatify/test_pytext.py
 	python -m unittest -v tests/formatify/test_pycmd.py
+	python -m unittest -v tests/formatify/test_pyfmt.py
 
 clean:
 	rm -rf deploy/gweb deploy/libpython* deploy/formatify

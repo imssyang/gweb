@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Label</key>
+	<string>com.imssyang.gweb</string>
+	<key>WorkingDirectory</key>
+	<string>/opt/app/gweb</string>
+	<key>EnvironmentVariables</key>
+	<dict>
+		<key>PYTHONPATH</key>
+		<string>/opt/app/gweb/deploy</string>
+	</dict>
+	<key>ProgramArguments</key>
+	<array>
+		<string>/opt/app/gweb/deploy/gweb</string>
+		<string>-c</string>
+		<string>/opt/app/gweb/deploy/gweb.yaml</string>
+	</array>
+	<key>Disabled</key>
+	<false/>
+	<key>RunAtLoad</key>
+	<true/>
+	<key>StandardErrorPath</key>
+	<string>/tmp/com.imssyang.gweb.err</string>
+	<key>StandardOutPath</key>
+	<string>/tmp/com.imssyang.gweb.out</string>
+</dict>
+</plist>

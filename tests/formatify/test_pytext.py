@@ -2,7 +2,7 @@ import unittest
 from formatify import JsonText, AstText
 
 
-class FormatifyTestCase(unittest.TestCase):
+class PytextTestCase(unittest.TestCase):
     SAMPLE_JSON = '{"a":True,"b":[1,2,3]}'
     SAMPLE_DICT = "{'a': True, 'b': [1, 2, 3]}"
     FFPROBE_CMD = 'ffprobe -hide_banner -select_streams v:0 -show_packets -of json 123.mp4'

@@ -2,7 +2,6 @@ package formatify
 
 /*
 #cgo CXXFLAGS: -std=c++11
-#cgo LDFLAGS: -lpython3.9
 #include <Python.h>
 #include "pyfmt.h"
 */

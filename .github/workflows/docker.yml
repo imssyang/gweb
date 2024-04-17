@@ -25,7 +25,20 @@ jobs:
 
     steps:
     - name: Checkout repository - ${{ github.repository }}
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
+
+    - name: Docker meta - ${{ env.REGISTRY }}/imssyang/gweb
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: |
+          ${{ env.REGISTRY }}/imssyang/gweb
+        tags: |
+          type=ref,event=branch
+          type=ref,event=pr
+          type=semver,pattern={{raw}}
+          type=semver,pattern={{version}}
+          type=semver,pattern={{major}}.{{minor}}
 
     - name: Login registry - ${{ env.REGISTRY }}
       if: github.event_name != 'pull_request'
@@ -35,19 +48,14 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ env.TOKEN }}
 
-    - name: Build image - ${{ env.IMAGE }}
-      working-directory: .
-      shell: bash
-      run: |
-        docker build . --file Dockerfile --tag ${{ env.IMAGE }}
+    - name: Build and push - ${{ env.IMAGE }}
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        push: ${{ github.event_name != 'pull_request' }}
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
 
-    - name: Push image - ${{ env.IMAGE }}
-      id: push
-      shell: bash
-      run: |
-        docker push ${{ env.IMAGE }} && \
-        echo "image=${{ env.IMAGE }}" >> $GITHUB_OUTPUT
-
-    - name: Metadata image - ${{ env.IMAGE }}
+    - name: Env-variables of image - ${{ env.IMAGE }}
       run: env
       shell: bash

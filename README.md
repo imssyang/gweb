@@ -1,13 +1,35 @@
+<a href="https://github.com/imssyang/gweb">
+  <h1 align="center">
+    <picture>
+	  <img alt="GWeb" src="https://github.com/imssyang/gweb/blob/main/public/img/favicon.svg" width="100" />
+    </picture>
+    <p>Formatui</p>
+  </h1>
+</a>
 
-# Directory
+[![license](https://img.shields.io/go/l/gweb.svg)](https://github.com/imssyang/gweb/blob/main/LICENSE)
 
+GWeb is a backend-framework based on [gin](https://gin-gonic.com) in golang, and support for C or CPP language based on cgo. With the [pybind11](https://github.com/pybind/pybind11) of the open source community, also support Python after simple encapsulation. Therefore it can be used as a general framework to experiment with various development scenarios. Nothing limits developers to doing interesting things!
 
+## Feature
 
-# Init
+- Support golang, c, cpp and python code.
+- As backend of [formatui](https://github.com/imssyang/formatui).
+
+## Dependencies
+
+* [Gin Web Framework](https://gin-gonic.com): A fastest full-featured web framework for Go. 
+* [pybind11](https://github.com/pybind/pybind11): Seamless operability between C++11 and Python.
+* [Python](https://www.python.org): Python is a programming language that lets you work quickly
+and integrate systems more effectively.
+
+### Commands
 
 ```bash
-go mod init imssyang.com/gin
-go get github.com/gin-gonic/gin@v1.9.1
+# Run by docker, and open http://localhost:5005 in browser
+docker run -it -p 5005:5005 --rm ghcr.io/imssyang/gweb:latest
 ```
 
-go run main.go
+## Todo
+
+- Support more frontend

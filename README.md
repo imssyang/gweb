@@ -3,7 +3,7 @@
     <picture>
 	  <img alt="GWeb" src="https://github.com/imssyang/gweb/blob/main/public/img/favicon.svg" width="100" />
     </picture>
-    <p>Formatui</p>
+    <p>GWeb</p>
   </h1>
 </a>
 

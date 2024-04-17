@@ -3,6 +3,8 @@
 **/*/node_modules/
 deploy/*
 !deploy/gweb.yaml
+public/css/*
+public/js/*
+public/img/*
+!public/img/favicon.svg
 public/plugins/
-public/img/formatify.svg
-test/gweb

@@ -17,7 +17,6 @@ import (
 	"github.com/imssyang/gweb/internal/log"
 	"github.com/imssyang/gweb/public"
 	"github.com/imssyang/gweb/templates"
-	"github.com/imssyang/gweb/web"
 	"github.com/urfave/cli/v2"
 )
 
@@ -81,7 +80,6 @@ func Action(ctx *cli.Context) error {
 	engine.Use(gin.Recovery())
 	templates.Init(engine)
 	public.Init(engine)
-	web.Init(engine)
 
 	api.Register(engine)
 	v1.Register(engine)

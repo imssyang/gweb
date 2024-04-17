@@ -13,7 +13,7 @@ import (
 	"github.com/imssyang/gweb/internal/log"
 )
 
-//go:embed img plugins
+//go:embed css js img plugins
 var files embed.FS
 
 func walkNames(fsys fs.FS) []string {
@@ -34,7 +34,7 @@ func Init(engine *gin.Engine) {
 	images, _ := fs.Sub(files, "img")
 	engine.StaticFileFS("/favicon.svg", "favicon.svg", http.FS(images))
 
-	for _, name := range []string{"img", "plugins"} {
+	for _, name := range []string{"css", "js", "img", "plugins"} {
 		sub, _ := fs.Sub(files, name)
 		log.Zap.Debugln("public/"+name+":", walkNames(sub))
 		engine.StaticFS("/"+name, http.FS(sub))

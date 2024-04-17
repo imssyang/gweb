@@ -6,10 +6,17 @@
   <link rel=icon href="img/formatify.svg">
   <link rel="stylesheet" href="plugins/w2ui@2.0.0/w2ui-2.0.min.css">
   <link rel="stylesheet" href="plugins/bootstrap-icons@1.11.2/bootstrap-icons.min.css">
-  <link rel="stylesheet" href="formatify/dist/index.min.css">
+  <link rel="stylesheet" href="css/formatify.min.css">
 </head>
 <body>
-  <script type="module" src="formatify/dist/index.min.js"></script>
+  <script type="module">
+    import { InitUI } from '/js/formatify.min.js'
+    InitUI({
+      url: {
+        prefix: '/formatify',
+      }
+    })
+  </script>
 </body>
 </html>
 {{ end }}

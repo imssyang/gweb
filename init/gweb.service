@@ -8,9 +8,8 @@ Type=simple
 User=root
 Group=root
 WorkingDirectory=/opt/app/gweb
-ExecStart=PYTHONPATH=/opt/app/gweb/deploy \
-    /opt/app/gweb/deploy/gweb -c \
-    /opt/app/gweb/deploy/gweb.yaml
+Environment="PYTHONPATH=/opt/app/gweb/deploy"
+ExecStart=/opt/app/gweb/deploy/gweb -c /opt/app/gweb/deploy/gweb.yaml
 
 [Install]
 WantedBy=multi-user.target

@@ -7,7 +7,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE: ghcr.io/imssyang/gweb:${{ github.ref_name }}
+  IMAGE: ghcr.io/${{ github.repository }}:${{ github.ref_name }}
   TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 permissions:
@@ -27,12 +27,12 @@ jobs:
     - name: Checkout repository - ${{ github.repository }}
       uses: actions/checkout@v4
 
-    - name: Docker meta - ${{ env.REGISTRY }}/imssyang/gweb
+    - name: Docker meta - ${{ env.REGISTRY }}/${{ github.repository }}
       id: meta
       uses: docker/metadata-action@v5
       with:
         images: |
-          ${{ env.REGISTRY }}/imssyang/gweb
+          ${{ env.REGISTRY }}/${{ github.repository }}
         tags: |
           type=ref,event=branch
           type=ref,event=pr
@@ -56,6 +56,6 @@ jobs:
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
 
-    - name: Env-variables of image - ${{ env.IMAGE }}
+    - name: Environment of image - ${{ env.IMAGE }}
       run: env
       shell: bash

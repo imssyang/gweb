@@ -1,4 +1,4 @@
-FROM ghcr.io/imssyang/formatui:v1.0.2 AS formatui
+FROM ghcr.io/imssyang/formatui:latest AS formatui
 FROM golang:1.20-buster
 
 WORKDIR /opt/gweb

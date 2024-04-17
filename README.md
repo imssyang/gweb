@@ -7,9 +7,7 @@
   </h1>
 </a>
 
-[![license](https://img.shields.io/go/l/gweb.svg)](https://github.com/imssyang/gweb/blob/main/LICENSE)
-
-GWeb is a backend-framework based on [gin](https://gin-gonic.com) in golang, and support for C or CPP language based on cgo. With the [pybind11](https://github.com/pybind/pybind11) of the open source community, also support Python after simple encapsulation. Therefore it can be used as a general framework to experiment with various development scenarios. Nothing limits developers to doing interesting things!
+GWeb is a multi-language universal web application based on [gin](https://gin-gonic.com) in golang, and support for C or CPP language based on cgo. With the [pybind11](https://github.com/pybind/pybind11) of the open source community, also support Python after simple encapsulation. Therefore it can be used as a general application to experiment with various development scenarios. Nothing limits developers to doing interesting things!
 
 ## Feature
 
@@ -18,7 +16,7 @@ GWeb is a backend-framework based on [gin](https://gin-gonic.com) in golang, and
 
 ## Dependencies
 
-* [Gin Web Framework](https://gin-gonic.com): A fastest full-featured web framework for Go. 
+* [Gin](https://gin-gonic.com): A fastest full-featured web framework for Go. 
 * [pybind11](https://github.com/pybind/pybind11): Seamless operability between C++11 and Python.
 * [Python](https://www.python.org): Python is a programming language that lets you work quickly
 and integrate systems more effectively.

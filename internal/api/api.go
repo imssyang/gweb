@@ -16,19 +16,22 @@ func Register(engine *gin.Engine) {
 	router := &Router{
 		Engine: engine,
 	}
-	router.ping()
-	router.json()
+	router.detect()
 	router.index()
+	router.json()
 	router.posts()
-	router.users()
 	router.raw()
 }
 
-func (r *Router) ping() {
-	r.GET("/ping", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{
-			"message": "pong",
-		})
+func (r *Router) detect() {
+	r.HEAD("/", func(c *gin.Context) {
+		c.String(http.StatusOK, "")
+	})
+}
+
+func (r *Router) index() {
+	r.GET("/index", func(c *gin.Context) {
+		c.Redirect(http.StatusMovedPermanently, "/formatify")
 	})
 }
 
@@ -44,27 +47,10 @@ func (r *Router) json() {
 	})
 }
 
-func (r *Router) index() {
-	r.GET("/index", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "index.tmpl", gin.H{
-			"title": "Main website",
-		})
-	})
-
-}
-
 func (r *Router) posts() {
 	r.GET("/posts/index", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "posts/index.tmpl", gin.H{
 			"title": "Posts",
-		})
-	})
-}
-
-func (r *Router) users() {
-	r.GET("/users/index", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "users/index.tmpl", gin.H{
-			"title": "Users",
 		})
 	})
 }

@@ -2,18 +2,18 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title>formatify</title>
-  <link rel=icon href="img/formatify.svg">
+  <title>{{ .title }}</title>
+  <link rel=icon href={{ .icon }}>
   <link rel="stylesheet" href="plugins/w2ui@2.0.0/w2ui-2.0.min.css">
   <link rel="stylesheet" href="plugins/bootstrap-icons@1.11.2/bootstrap-icons.min.css">
-  <link rel="stylesheet" href="css/formatify.min.css">
+  <link rel="stylesheet" href={{ .css }}>
 </head>
 <body>
   <script type="module">
-    import { InitUI } from '/js/formatify.min.js'
+    import { InitUI } from {{ .js }}
     InitUI({
       url: {
-        prefix: '/formatify',
+        prefix: {{ .uiPrefix }},
       }
     })
   </script>

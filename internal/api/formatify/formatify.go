@@ -26,7 +26,13 @@ func Register(engine *gin.Engine) {
 
 func (r *Router) index() {
 	r.Engine.GET("/"+Name, func(c *gin.Context) {
-		c.HTML(http.StatusOK, Name+"/index", gin.H{})
+		c.HTML(http.StatusOK, Name+"/index", gin.H{
+			"title":    "Formatify",
+			"icon":     "img/formatify.svg",
+			"css":      "css/formatify.min.css",
+			"js":       "/js/formatify.min.js",
+			"uiPrefix": "/formatify",
+		})
 	})
 }
 

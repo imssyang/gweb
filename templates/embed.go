@@ -29,6 +29,9 @@ var (
 			year, month, day := t.Date()
 			return fmt.Sprintf("%d/%02d/%02d", year, month, day)
 		},
+		"NoEscape": func(s string) template.HTML {
+			return template.HTML(s)
+		},
 	}
 )
 

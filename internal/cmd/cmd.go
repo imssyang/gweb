@@ -12,7 +12,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/imssyang/gweb/internal/api"
 	"github.com/imssyang/gweb/internal/api/formatify"
-	v1 "github.com/imssyang/gweb/internal/api/v1"
 	"github.com/imssyang/gweb/internal/conf"
 	"github.com/imssyang/gweb/internal/log"
 	"github.com/imssyang/gweb/public"
@@ -82,7 +81,6 @@ func Action(ctx *cli.Context) error {
 	public.Init(engine)
 
 	api.Register(engine)
-	v1.Register(engine)
 	formatify.Register(engine)
 
 	server := &http.Server{

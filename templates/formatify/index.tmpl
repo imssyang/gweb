@@ -3,17 +3,17 @@
 <html lang="en">
 <head>
   <title>{{ .title }}</title>
-  <link rel=icon href={{ .icon }}>
+  <link rel=icon href="{{ .icon }}">
   <link rel="stylesheet" href="plugins/w2ui@2.0.0/w2ui-2.0.min.css">
   <link rel="stylesheet" href="plugins/bootstrap-icons@1.11.2/bootstrap-icons.min.css">
-  <link rel="stylesheet" href={{ .css }}>
+  <link rel="stylesheet" href="{{ .style }}">
 </head>
 <body>
   <script type="module">
-    import { InitUI } from {{ .js }}
+    import { InitUI } from {{ .main }}
     InitUI({
       url: {
-        prefix: {{ .uiPrefix }},
+        prefix: {{ .prefix }},
       }
     })
   </script>

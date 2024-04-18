@@ -19,18 +19,10 @@ var (
 	files embed.FS
 
 	funcMap = template.FuncMap{
-		"Year": func() int {
-			return time.Now().Year()
-		},
-		"LoadTimes": func(startTime time.Time) string {
-			return fmt.Sprint(time.Since(startTime).Nanoseconds()/1e6) + "ms"
-		},
-		"FormatAsDate": func(t time.Time) string {
-			year, month, day := t.Date()
-			return fmt.Sprintf("%d/%02d/%02d", year, month, day)
-		},
-		"NoEscape": func(s string) template.HTML {
-			return template.HTML(s)
+		"MSecTime": func(t time.Time) string {
+			timestamp := t.Format("2006/1/2 15:04:05.000")
+			unixTimestamp := t.Unix()
+			return fmt.Sprintf("%s (%d)", timestamp, unixTimestamp)
 		},
 	}
 )

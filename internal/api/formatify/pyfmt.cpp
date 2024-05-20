@@ -1,24 +1,27 @@
 #include <iostream>
 #include <string>
-#include <pybind11/embed.h>
+#include "internal.h"
 #include "pyfmt.h"
 
-namespace py = pybind11;
+static PyFmt pyfmt;
 
-size_t PyfmtDumps(const char* mode, char* data, size_t size, size_t indent)
-{
-	py::scoped_interpreter guard{};
-	py::module_ pyfmt = py::module_::import("formatify");
-	py::object result = pyfmt.attr("dumps")(mode, data, indent);
-	if (result.is_none()) {
-        return -1;
-    }
-	std::string formatted = result.cast<std::string>();
-	if (formatted.length() >= size) {
-		py::print("[CGO] error result tool long. (", formatted.length(), " >= ", size, ")");
-		return -2;
+size_t PyfmtDesiredSize(const char* mode, const char* data, size_t indent) {
+	std::string result = pyfmt.dumps(mode, data, indent);
+	if (result.length() == 0) {
+		return 0;
+	}
+	return result.length() + 1;
+}
+
+size_t PyfmtDumps(const char* mode, char* data, size_t size, size_t indent) {
+	std::string result = pyfmt.dumps(mode, data, indent);
+	if (result.length() >= size) {
+		std::cout << "[CGO-error] size of result too long. ("
+					<< result.length() << " >= " <<  size << ")"
+					<< std::endl;
+		return -1;
 	}
 
-	std::strcpy(data, formatted.data());
+	std::strcpy(data, result.data());
 	return 0;
 }

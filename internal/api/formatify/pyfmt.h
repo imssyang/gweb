@@ -7,6 +7,7 @@
 extern "C" {
 #endif
 
+size_t PyfmtDesiredSize(const char* mode, const char* data, size_t indent);
 size_t PyfmtDumps(const char* mode, char* data, size_t size, size_t indent);
 
 #ifdef __cplusplus

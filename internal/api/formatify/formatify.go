@@ -66,9 +66,9 @@ func (r *Router) mode() {
 				}[mode]
 			}
 
-			formatted, err := PyfmtDumps(mode, string(body), indent, hasEscape)
+			formatted, err := PyDumps(mode, string(body), indent, hasEscape)
 			if err != nil {
-				c.String(http.StatusBadRequest, "PyfmtDumps error %v", err)
+				c.String(http.StatusBadRequest, "PyDumps error %v", err)
 				return
 			}
 			c.String(http.StatusOK, formatted)

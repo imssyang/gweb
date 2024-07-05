@@ -3,25 +3,29 @@
 #include "internal.h"
 #include "pyfmt.h"
 
-static PyFmt pyfmt;
+static PyFormat pyfmt;
 
-size_t PyfmtDesiredSize(const char* mode, const char* data, size_t indent, size_t has_escape) {
-	std::string result = pyfmt.dumps(mode, data, indent, has_escape);
+size_t PyDumpsSize(const PyDumpsData* pydata)
+{
+	auto& pyd = *pydata;
+	std::string result = pyfmt.dumps(pyd.mode, pyd.data, pyd.indent, pyd.has_escape);
 	if (result.length() == 0) {
 		return 0;
 	}
 	return result.length() + 1;
 }
 
-size_t PyfmtDumps(const char* mode, char* data, size_t size, size_t indent, size_t has_escape) {
-	std::string result = pyfmt.dumps(mode, data, indent, has_escape);
-	if (result.length() >= size) {
+size_t PyDumps(PyDumpsData* pydata)
+{
+	auto& pyd = *pydata;
+	std::string result = pyfmt.dumps(pyd.mode, pyd.data, pyd.indent, pyd.has_escape);
+	if (result.length() >= pyd.size) {
 		std::cout << "[CGO-error] size of result too long. ("
-					<< result.length() << " >= " <<  size << ")"
+					<< result.length() << " >= " << pyd.size << ")"
 					<< std::endl;
 		return -1;
 	}
 
-	std::strcpy(data, result.data());
+	std::strcpy(pyd.data, result.data());
 	return 0;
 }

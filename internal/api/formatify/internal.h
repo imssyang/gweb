@@ -43,7 +43,7 @@ private:
     std::queue<std::size_t> requests_;
 };
 
-class PyFmt : public PyCache {
+class PyFormat : public PyCache {
 public:
     std::string dumps(const std::string& mode, const std::string& data, size_t indent, bool has_escape) {
         std::size_t hash_req = hash_val(mode, data, indent, has_escape);

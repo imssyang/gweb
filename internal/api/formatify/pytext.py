@@ -2,31 +2,41 @@ import ast
 import io
 import json
 import pprint
+import re
 from typing import Any
 from typing import Optional
 
 
 class BaseText:
-    def is_json(self, data: str) -> bool:
+    @staticmethod
+    def is_json(data: str) -> bool:
         try:
             json.loads(s=data)
             return True
         except:
             return False
 
-    def json2ast(self, data: str) -> Any:
+    @staticmethod
+    def has_json_escape(data: str) -> bool:
+        escape_pattern = re.compile(r'\\".*\\"')
+        return bool(escape_pattern.search(data))
+
+    @staticmethod
+    def json2ast(data: str) -> Any:
         try:
             return json.loads(s=data)
         except:
             return None
 
-    def ast2json(self, data: Any) -> Optional[str]:
+    @staticmethod
+    def ast2json(data: Any) -> Optional[str]:
         try:
             return json.dumps(data, ensure_ascii=False)
         except:
             return None
 
-    def str2ast(self, data: str) -> Any:
+    @staticmethod
+    def str2ast(data: str) -> Any:
         try:
             return ast.literal_eval(data)
         except:
@@ -37,6 +47,8 @@ class JsonText(BaseText):
     def __init__(self, data: Any):
         super().__init__()
         if isinstance(data, str):
+            if self.has_json_escape(data):
+                data = self.json2ast(data)
             d = self.json2ast(data)
             if d is None:
                 d = self.str2ast(data)
@@ -47,7 +59,7 @@ class JsonText(BaseText):
         else:
             self.data = data
 
-    def dumps(self, indent: int) -> Optional[str]:
+    def _dumps(self, indent: int) -> Optional[str]:
         try:
             indent = None if indent <= 0 else indent
             r = json.dumps(
@@ -58,6 +70,12 @@ class JsonText(BaseText):
             return r if self.data else None
         except:
             return None
+
+    def dumps(self, indent: int, has_escape: bool = False) -> Optional[str]:
+        if has_escape:
+            self.data = self._dumps(indent)
+        return self._dumps(indent)
+
 
 class AstText(BaseText):
     def __init__(self, data: Any):

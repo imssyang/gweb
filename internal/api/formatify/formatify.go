@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -38,6 +39,12 @@ func (r *Router) index() {
 
 func (r *Router) mode() {
 	r.Engine.POST("/"+Name+"/:mode/:action", func(c *gin.Context) {
+		escapeValue := c.DefaultQuery("escape", "false")
+		hasEscape, err := strconv.ParseBool(escapeValue)
+		if err != nil {
+			hasEscape = false
+		}
+
 		body, err := io.ReadAll(c.Request.Body)
 		if err != nil {
 			c.String(http.StatusInternalServerError, "Internal Server Error")
@@ -59,9 +66,9 @@ func (r *Router) mode() {
 				}[mode]
 			}
 
-			formatted, err := PyfmtDumps(mode, string(body), indent)
+			formatted, err := PyDumps(mode, string(body), indent, hasEscape)
 			if err != nil {
-				c.String(http.StatusBadRequest, "PyfmtDumps error %v", err)
+				c.String(http.StatusBadRequest, "PyDumps error %v", err)
 				return
 			}
 			c.String(http.StatusOK, formatted)

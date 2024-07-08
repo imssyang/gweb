@@ -13,7 +13,7 @@ inline void hash_combine(std::size_t &seed, const T &val) {
 }
 
 template <typename... Types>
-inline std::size_t hash_val(const Types &... args) {
+inline std::size_t hash_val(const Types&... args) {
     std::size_t seed = 0;
     (hash_combine(seed, args), ...);
     return seed;
@@ -43,10 +43,10 @@ private:
     std::queue<std::size_t> requests_;
 };
 
-class PyFmt : public PyCache {
+class PyFormat : public PyCache {
 public:
-    std::string dumps(const std::string& mode, const std::string& data, size_t indent) {
-        std::size_t hash_req = hash_val(mode, data, indent);
+    std::string dumps(const std::string& mode, const std::string& data, size_t indent, bool has_escape) {
+        std::size_t hash_req = hash_val(mode, data, indent, has_escape);
         auto checked_data = check(hash_req);
         if (!checked_data.empty()) {
             return checked_data;
@@ -54,7 +54,7 @@ public:
 
 		py::scoped_interpreter guard{};
 		py::module_ pyfmt = py::module_::import("formatify");
-		py::object result = pyfmt.attr("dumps")(mode, data, indent);
+		py::object result = pyfmt.attr("dumps")(mode, data, indent, has_escape);
 		if (result.is_none()) {
             py::print("[CGO] python formatify.dumps(", mode, ") fail.");
 			return "";

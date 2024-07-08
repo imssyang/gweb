@@ -1,17 +1,21 @@
-#ifndef _PYFMT_H
-#define _PYFMT_H
-
+#pragma once
 #include <Python.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-size_t PyfmtDesiredSize(const char* mode, const char* data, size_t indent);
-size_t PyfmtDumps(const char* mode, char* data, size_t size, size_t indent);
+typedef struct {
+    char* mode;
+    char* data;
+    size_t size;
+    size_t indent;
+    size_t has_escape;
+} PyDumpsData;
+
+size_t PyDumpsSize(const PyDumpsData* pydata);
+size_t PyDumps(PyDumpsData* pydata);
 
 #ifdef __cplusplus
 }
 #endif
-
-#endif // _PYFMT_H

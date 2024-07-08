@@ -9,19 +9,19 @@ class PyfmtTestCase(unittest.TestCase):
 
     def test_dumps(self):
         self.assertEqual(
-            dumps('json', self.SAMPLE_JSON, 0),
+            dumps('json', self.SAMPLE_JSON, 0, False),
             '{"a": true, "b": [1, 2, 3]}',
             'incorrect return value',
         )
 
         self.assertEqual(
-            dumps('python', self.SAMPLE_DICT, 0),
+            dumps('python', self.SAMPLE_DICT, 0, False),
             "{'a': True, 'b': [1, 2, 3]}",
             'incorrect return value',
         )
 
         self.assertEqual(
-            dumps('python', self.FFPROBE_CMD, 0),
+            dumps('python', self.FFPROBE_CMD, 0, False),
             None,
             'incorrect return value',
         )

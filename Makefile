@@ -22,20 +22,21 @@ export CGO_LDFLAGS=${BASE_LDFLAGS} \
 	-l${PYTHON_VER}
 export PYTHONPATH=${PROJECT_DIR}/internal/api
 
-formatify-deploy:
+formatui-deploy:
 	mkdir -p public/img public/js public/css
-	cp web/formatify/src/img/formatui.svg public/img/formatify.svg
-	cp web/formatify/dist/index.min.js public/js/formatify.min.js
-	cp web/formatify/dist/index.min.css public/css/formatify.min.css
-	cp -r web/formatify/dist/plugins/* public/plugins
+	cp third_party/formatui/src/img/formatui.svg public/img/formatify.svg
+	cp third_party/formatui/dist/index.min.js public/js/formatify.min.js
+	cp third_party/formatui/dist/index.min.css public/css/formatify.min.css
+	cp -r third_party/formatui/dist/plugins/* public/plugins
 
-formatify-clean:
+formatui-clean:
 	rm -rf public/img/formatify.svg \
 		public/js/formatify.min.js \
 		public/css/formatify.min.css \
-		public/plugins/bootstrap-icons@1.11.2 \
-		public/plugins/json5@2.2.3 \
-		public/plugins/w2ui@2.0.0
+		public/plugins/bootstrap-icons@* \
+		public/plugins/clipboard@* \
+		public/plugins/json5@* \
+		public/plugins/w2ui@*
 
 env:
 	@echo OS_TYPE=$(OS_TYPE)
@@ -55,7 +56,7 @@ endif
 run:
 	go run cmd/gweb.go -p 5015 --debug
 
-deploy: env formatify-deploy
+deploy: env formatui-deploy
 	python -m compileall -b internal/api/formatify
 	rsync -av --include="*/" --include="*.pyc" --exclude="*" \
 		internal/api/formatify deploy
@@ -70,7 +71,7 @@ test:
 	python -m unittest -v tests/formatify/test_pycmd.py
 	python -m unittest -v tests/formatify/test_pyfmt.py
 
-clean: formatify-clean
+clean: formatui-clean
 	find internal -name "*.pyc" -type f -delete
 	find internal -type d -name "__pycache__" -exec rm -r {} +
 	find tests -type d -name "__pycache__" -exec rm -r {} +

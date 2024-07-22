@@ -1,3 +1,3 @@
-[submodule "web/formatify"]
-	path = web/formatify
+[submodule "third_party/formatui"]
+	path = third_party/formatui
 	url = https://github.com/imssyang/formatui.git

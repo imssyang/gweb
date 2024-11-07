@@ -51,10 +51,15 @@ func (d *PyDumpsData) newCData() (*C.PyDumpsData, error) {
 }
 
 func (d *PyDumpsData) resetCData(desiredSize int) error {
-	newSize := math.Max(float64(len(d.Data)), float64(desiredSize))
+	newSize := int(math.Max(float64(len(d.Data)), float64(desiredSize)) + 1)
 	newSize_ := C.size_t(newSize)
 	newData_ := (*C.char)(C.malloc(newSize_))
-	C.strcpy(newData_, d.cdata.data)
+	if newData_ == nil {
+		return fmt.Errorf("malloc(%v) failed to allocate memory", newSize_)
+	}
+
+	newData_[newSize_-1] = 0
+	C.strncpy(newData_, d.cdata.data, newSize_-1)
 	C.free(unsafe.Pointer(d.cdata.data))
 	d.cdata.data = newData_
 	d.cdata.size = newSize_

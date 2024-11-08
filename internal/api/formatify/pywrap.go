@@ -58,7 +58,7 @@ func (d *PyDumpsData) resetCData(desiredSize int) error {
 		return fmt.Errorf("malloc(%v) failed to allocate memory", newSize_)
 	}
 
-	newData_[newSize_-1] = 0
+	C.memset(unsafe.Pointer(newData_), 0, newSize_)
 	C.strncpy(newData_, d.cdata.data, newSize_-1)
 	C.free(unsafe.Pointer(d.cdata.data))
 	d.cdata.data = newData_

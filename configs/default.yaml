@@ -4,6 +4,11 @@ service:
   timeout:
     read: 10s
     write: 10s
+webrtc:
+  - address: ":2345"
+    netType: tcp
+  - address: ":5678"
+    netType: udp
 template:
   files:
     - "*.tmpl"

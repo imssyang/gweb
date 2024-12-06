@@ -1,3 +1,6 @@
 [submodule "third_party/formatui"]
 	path = third_party/formatui
 	url = https://github.com/imssyang/formatui.git
+[submodule "third_party/mediaui"]
+	path = third_party/mediaui
+	url = https://github.com/imssyang/mediaui.git

@@ -14,6 +14,7 @@ import (
 	"github.com/imssyang/gweb/internal/api/formatify"
 	"github.com/imssyang/gweb/internal/conf"
 	"github.com/imssyang/gweb/internal/log"
+	"github.com/imssyang/gweb/internal/webrtc"
 	"github.com/imssyang/gweb/public"
 	"github.com/imssyang/gweb/templates"
 	"github.com/urfave/cli/v2"
@@ -71,6 +72,7 @@ func Action(ctx *cli.Context) error {
 		conf.App.Encap()
 	}
 
+	log.SetDebug(conf.App.Debug)
 	log.Zap.Debugf("Config: %+v", conf.App)
 
 	gin.SetMode(conf.GinMode())
@@ -79,6 +81,7 @@ func Action(ctx *cli.Context) error {
 	engine.Use(gin.Recovery())
 	templates.Init(engine)
 	public.Init(engine)
+	webrtc.Init()
 
 	api.Register(engine)
 	formatify.Register(engine)

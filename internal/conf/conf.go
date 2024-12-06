@@ -19,7 +19,6 @@ var App AppOpts
 func init() {
 	if err := App.Parse(configs.Default); err != nil {
 		log.Fatalf("config: failed loading defaults config (%s)", err)
-		return
 	}
 }
 
@@ -36,6 +35,10 @@ type AppOpts struct {
 			Write time.Duration `yaml:"write"`
 		} `yaml:"timeout"`
 	} `yaml:"service"`
+	WebRTC []struct {
+		Address string `yaml:"address"`
+		NetType string `yaml:"netType"`
+	} `yaml:"webrtc"`
 	Template struct {
 		Files []string `yaml:"files"`
 	} `yaml:"template"`

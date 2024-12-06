@@ -62,5 +62,9 @@
         "typeinfo": "cpp",
         "valarray": "cpp",
         "variant": "cpp"
-    }
+    },
+    "go.gopath": "/opt/go/gomod/1.20.13",
+    "go.goroot": "/opt/go/goenv/versions/1.20.13",
+    "http.proxySupport": "on",
+    "http.proxy": "http://127.0.0.1:7890",
 }

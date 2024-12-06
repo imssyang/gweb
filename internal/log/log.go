@@ -14,6 +14,9 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
+var ZapLevel zap.AtomicLevel
+var Zap *zap.SugaredLogger
+
 func init() {
 	log.SetFlags(0)
 	log.SetOutput(&appWriter{
@@ -23,7 +26,7 @@ func init() {
 		resetLevel: false,
 	})
 
-	Zap = zapLogger(&appWriter{
+	Zap, ZapLevel = zapLogger(&appWriter{
 		logger:     log.New(os.Stdout, "", 0),
 		prefix:     zapFlag,
 		hasTime:    true,
@@ -84,15 +87,15 @@ func (w *appWriter) Write(p []byte) (n int, err error) {
 	return len(p), w.logger.Output(2, s)
 }
 
-func zapLogger(w io.Writer) *zap.SugaredLogger {
+func zapLogger(w io.Writer) (*zap.SugaredLogger, zap.AtomicLevel) {
 	cfg := zap.NewProductionEncoderConfig()
 	cfg.EncodeLevel = zapcore.LowercaseLevelEncoder
 	cfg.EncodeTime = nil
 	cfg.ConsoleSeparator = "\t"
 
-	level := zapcore.InfoLevel
+	level := zap.NewAtomicLevelAt(zap.InfoLevel)
 	if conf.App.Debug {
-		level = zapcore.DebugLevel
+		level.SetLevel(zap.DebugLevel)
 	}
 
 	core := zapcore.NewCore(
@@ -101,10 +104,8 @@ func zapLogger(w io.Writer) *zap.SugaredLogger {
 		level,
 	)
 
-	return zap.New(core).Sugar()
+	return zap.New(core).Sugar(), level
 }
-
-var Zap *zap.SugaredLogger
 
 func logFormatter(param gin.LogFormatterParams) string {
 	timestamp := param.TimeStamp.Format("2006/1/2 15:04:05.000")
@@ -123,4 +124,12 @@ func logFormatter(param gin.LogFormatterParams) string {
 
 func GinLogger() gin.HandlerFunc {
 	return gin.LoggerWithFormatter(logFormatter)
+}
+
+func SetDebug(enable bool) {
+	level := zap.InfoLevel
+	if enable {
+		level = zap.DebugLevel
+	}
+	ZapLevel.SetLevel(level)
 }

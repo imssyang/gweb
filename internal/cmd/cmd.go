@@ -12,6 +12,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/imssyang/gweb/internal/api"
 	"github.com/imssyang/gweb/internal/api/formatify"
+	"github.com/imssyang/gweb/internal/api/media"
 	"github.com/imssyang/gweb/internal/conf"
 	"github.com/imssyang/gweb/internal/log"
 	"github.com/imssyang/gweb/internal/webrtc"
@@ -85,6 +86,7 @@ func Action(ctx *cli.Context) error {
 
 	api.Register(engine)
 	formatify.Register(engine)
+	media.Register(engine)
 
 	server := &http.Server{
 		Addr:           conf.App.Service.Address,

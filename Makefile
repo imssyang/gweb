@@ -38,6 +38,17 @@ formatui-clean:
 		public/plugins/json5@* \
 		public/plugins/w2ui@*
 
+mediaui-deploy:
+	mkdir -p public/img public/js public/css
+	cp third_party/mediaui/src/img/mediaui.svg public/img/media.svg
+	cp third_party/mediaui/dist/index.min.js public/js/media.min.js
+	cp third_party/mediaui/dist/index.min.css public/css/media.min.css
+
+mediaui-clean:
+	rm -rf public/img/media.svg \
+		public/js/media.min.js \
+		public/css/media.min.css
+
 env:
 	@echo OS_TYPE=$(OS_TYPE)
 	@echo PROJECT_DIR=$(PROJECT_DIR)
@@ -71,7 +82,7 @@ test:
 	python -m unittest -v tests/formatify/test_pycmd.py
 	python -m unittest -v tests/formatify/test_pyfmt.py
 
-clean: formatui-clean
+clean: formatui-clean mediaui-clean
 	find internal -name "*.pyc" -type f -delete
 	find internal -type d -name "__pycache__" -exec rm -r {} +
 	find tests -type d -name "__pycache__" -exec rm -r {} +

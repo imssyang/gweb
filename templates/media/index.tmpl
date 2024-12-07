@@ -1,0 +1,22 @@
+{{ define "media/index" }}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>{{ .title }}</title>
+  <link rel=icon href="{{ .icon }}">
+  <link rel="stylesheet" href="{{ .style }}">
+</head>
+<body>
+  <script type="module">
+    import { InitUI } from {{ .main }}
+    InitUI({
+      url: {
+        prefix: {{ .prefix }},
+      }
+    })
+  </script>
+  <div id="videos"></div>
+  <div id="logs"></div>
+</body>
+</html>
+{{ end }}

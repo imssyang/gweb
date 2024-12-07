@@ -8,6 +8,8 @@ import (
 	"github.com/imssyang/gweb/internal/log"
 )
 
+var Pool *WebRTCPool
+
 func Init() {
 	for i, webrtcConf := range conf.App.WebRTC {
 		address := webrtcConf.Address
@@ -25,6 +27,7 @@ func Init() {
 			return
 		}
 
-		log.Zap.Debugf("WebRTCPool: %+v", pool)
+		Pool = pool
+		log.Zap.Debugf("WebRTCPool: %+v", Pool)
 	}
 }

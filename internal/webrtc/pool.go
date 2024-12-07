@@ -69,6 +69,7 @@ func NewWebRTCPool(netType NetType, ip string, port int, enableDetach bool) (*We
 		API: webrtc.NewAPI(
 			webrtc.WithSettingEngine(settingEngine),
 			webrtc.WithMediaEngine(media)),
+		connections: make(map[ConnectionID]*ConnectionData),
 	}, nil
 }
 

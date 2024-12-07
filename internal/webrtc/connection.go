@@ -26,6 +26,8 @@ func NewConnectionData(connID ConnectionID, connection *webrtc.PeerConnection, p
 		ConnID:     connID,
 		Connection: connection,
 		Pool:       pool,
+		channels:   make(map[ChannelID]*ChannelData),
+		tracks:     make(map[TrackID]*TrackData),
 	}, nil
 }
 

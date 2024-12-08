@@ -11,8 +11,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/imssyang/gweb/internal/api"
-	"github.com/imssyang/gweb/internal/api/formatify"
-	"github.com/imssyang/gweb/internal/api/media"
 	"github.com/imssyang/gweb/internal/conf"
 	"github.com/imssyang/gweb/internal/log"
 	"github.com/imssyang/gweb/internal/webrtc"
@@ -48,15 +46,15 @@ var Flags = []cli.Flag{
 		Name:        "bind",
 		Aliases:     []string{"b"},
 		Usage:       "Address to use",
-		Value:       conf.App.Service.Host,
-		Destination: &conf.App.Service.Host,
+		Value:       conf.App.HTTP.Host,
+		Destination: &conf.App.HTTP.Host,
 	},
 	&cli.IntFlag{
 		Name:        "port",
 		Aliases:     []string{"p"},
 		Usage:       "Port to use",
-		Value:       conf.App.Service.Port,
-		Destination: &conf.App.Service.Port,
+		Value:       conf.App.HTTP.Port,
+		Destination: &conf.App.HTTP.Port,
 		Action: func(ctx *cli.Context, v int) error {
 			if v >= 65536 {
 				return fmt.Errorf("flag: port value %v out of range[0-65535]", v)
@@ -85,14 +83,11 @@ func Action(ctx *cli.Context) error {
 	webrtc.Init()
 
 	api.Register(engine)
-	formatify.Register(engine)
-	media.Register(engine)
-
 	server := &http.Server{
-		Addr:           conf.App.Service.Address,
+		Addr:           conf.App.HTTP.Address,
 		Handler:        engine,
-		ReadTimeout:    conf.App.Service.Timeout.Read,
-		WriteTimeout:   conf.App.Service.Timeout.Write,
+		ReadTimeout:    conf.App.HTTP.Timeout.Read,
+		WriteTimeout:   conf.App.HTTP.Timeout.Write,
 		MaxHeaderBytes: 1 << 20,
 	}
 

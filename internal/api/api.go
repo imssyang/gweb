@@ -5,6 +5,8 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/imssyang/gweb/internal/api/formatify"
+	"github.com/imssyang/gweb/internal/api/media"
 )
 
 type Router struct {
@@ -18,6 +20,8 @@ func Register(engine *gin.Engine) {
 	router.detect()
 	router.index()
 	router.health()
+	formatify.Register(engine)
+	media.Register(engine)
 }
 
 func (r *Router) detect() {

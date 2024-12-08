@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/imssyang/gweb/internal/log"
 	"github.com/pion/webrtc/v4"
 )
 
@@ -32,15 +33,17 @@ func NewConnectionData(connID ConnectionID, connection *webrtc.PeerConnection, p
 }
 
 func (d *ConnectionData) OnICEConnectionStateChange(state webrtc.ICEConnectionState) {
-	// Set the handler for ICE connection state
 	// This will notify you when the peer has connected/disconnected
-	fmt.Printf("ICE Connection State has changed: %s\n", state.String())
+	log.Zap.Infof("ICEConnectionStateChange: %v\n", state)
+}
+
+func (d *ConnectionData) OnICEGatheringStateChange(state webrtc.ICEGatheringState) {
+	log.Zap.Infof("ICEGatheringStateChange: %v\n", state)
 }
 
 func (d *ConnectionData) OnConnectionStateChange(state webrtc.PeerConnectionState) {
-	// Set the handler for Peer connection state
 	// This will notify you when the peer has connected/disconnected
-	fmt.Printf("Peer Connection State has changed: %s\n", state.String())
+	log.Zap.Infof("Peer Connection State has changed: %s\n", state.String())
 	if state == webrtc.PeerConnectionStateFailed {
 		// Wait until PeerConnection has had no network activity for 30 seconds or another failure. It may be reconnected using an ICE Restart.
 		// Use webrtc.PeerConnectionStateDisconnected if you are interested in detecting faster timeout.
@@ -54,8 +57,15 @@ func (d *ConnectionData) OnConnectionStateChange(state webrtc.PeerConnectionStat
 	}
 }
 
+func (d *ConnectionData) OnICECandidate(candidate *webrtc.ICECandidate) {
+	log.Zap.Infof("OnICECandidate: %v\n", candidate)
+	if candidate != nil {
+		//check(peerConnection.AddICECandidate(i.ToJSON()))
+	}
+}
+
 func (d *ConnectionData) OnDataChannel(channel *webrtc.DataChannel) {
-	fmt.Printf("New DataChannel %s %d\n", channel.Label(), channel.ID())
+	log.Zap.Infof("New DataChannel %s %d\n", channel.Label(), channel.ID())
 
 	chanID := ChannelID(channel.Label())
 	cd, err := NewChannelData(chanID, channel, d)
@@ -82,7 +92,7 @@ func (d *ConnectionData) OnDataChannel(channel *webrtc.DataChannel) {
 	})
 }
 
-func (d *ConnectionData) SetLocalDescription(sdpType webrtc.SDPType) (webrtc.SessionDescription, error) {
+func (d *ConnectionData) SetLocalDescription(sdpType webrtc.SDPType, waitGatheringComplete bool) (webrtc.SessionDescription, error) {
 	var desc webrtc.SessionDescription
 	var err error
 	switch sdpType {
@@ -94,10 +104,18 @@ func (d *ConnectionData) SetLocalDescription(sdpType webrtc.SDPType) (webrtc.Ses
 	if err != nil {
 		return webrtc.SessionDescription{}, err
 	}
+
 	if err = d.Connection.SetLocalDescription(desc); err != nil {
 		return webrtc.SessionDescription{}, err
 	}
-	return desc, nil
+
+	if waitGatheringComplete {
+		<-webrtc.GatheringCompletePromise(d.Connection)
+		descWithCandidates := d.Connection.LocalDescription()
+		return *descWithCandidates, nil
+	} else {
+		return desc, nil
+	}
 }
 
 func (d *ConnectionData) SetRemoteDescription(desc webrtc.SessionDescription) error {

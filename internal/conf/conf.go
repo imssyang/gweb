@@ -23,10 +23,10 @@ func init() {
 }
 
 type AppOpts struct {
-	Config  string
-	Debug   bool `yaml:"debug"`
-	Silent  bool `yaml:"silent"`
-	Service struct {
+	Config string
+	Debug  bool `yaml:"debug"`
+	Silent bool `yaml:"silent"`
+	HTTP   struct {
 		Address string `yaml:"address"`
 		Host    string
 		Port    int
@@ -34,12 +34,15 @@ type AppOpts struct {
 			Read  time.Duration `yaml:"read"`
 			Write time.Duration `yaml:"write"`
 		} `yaml:"timeout"`
-	} `yaml:"service"`
-	WebRTC []struct {
-		Address string `yaml:"address"`
-		NetType string `yaml:"netType"`
+	} `yaml:"http"`
+	WebRTC struct {
+		Pools []struct {
+			NetType string `yaml:"netType"`
+			Address string `yaml:"address"`
+		} `yaml:"pools"`
+		ICEServers []string `yaml:"iceServers"`
 	} `yaml:"webrtc"`
-	Template struct {
+	Template   struct {
 		Files []string `yaml:"files"`
 	} `yaml:"template"`
 }
@@ -72,19 +75,19 @@ func (o *AppOpts) Parse(data []byte) error {
 }
 
 func (o *AppOpts) Encap() error {
-	o.Service.Address = o.Service.Host + ":" + fmt.Sprintf("%d", o.Service.Port)
+	o.HTTP.Address = o.HTTP.Host + ":" + fmt.Sprintf("%d", o.HTTP.Port)
 	return nil
 }
 
 func (o *AppOpts) Decap() error {
-	host, port, err := net.SplitHostPort(o.Service.Address)
+	host, port, err := net.SplitHostPort(o.HTTP.Address)
 	if err != nil {
-		log.Fatalf("config: failed split host and port from %s (%s)", o.Service.Address, err)
+		log.Fatalf("config: failed split host and port from %s (%s)", o.HTTP.Address, err)
 		return err
 	}
 
-	o.Service.Host = host
-	o.Service.Port, err = strconv.Atoi(port)
+	o.HTTP.Host = host
+	o.HTTP.Port, err = strconv.Atoi(port)
 	return err
 }
 

@@ -94,8 +94,6 @@ func (r *WebRTCRouter) offer() {
 			return
 		}
 
-		log.Zap.Debugf("REQ[%v] RSP[%v]", req.ConnID, rsp)
-
 		rsp.ConnID = req.ConnID
 		remoteDesc, err := req.GetDescription()
 		if err != nil {
@@ -157,14 +155,6 @@ type WebRTCCandidateRSP struct {
 func (r *WebRTCCandidateRSP) SetCandidates(candidates ...*webrtc.ICECandidate) {
 	for _, candidate := range candidates {
 		r.Candidates = append(r.Candidates, candidate)
-	}
-}
-
-func (r *WebRTCCandidateRSP) ToGinH() gin.H {
-	return gin.H{
-		"error":         r.Err,
-		"connID":        r.ConnID,
-		"iceCandidates": r.Candidates,
 	}
 }
 

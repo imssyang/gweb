@@ -11,61 +11,91 @@ import (
 type ConnectionID string
 
 type ConnectionData struct {
-	mu         sync.RWMutex
-	ConnID     ConnectionID
-	Connection *webrtc.PeerConnection
-	Pool       *WebRTCPool
-	channels   map[ChannelID]*ChannelData
-	tracks     map[TrackID]*TrackData
+	mu             sync.RWMutex
+	ConnID         ConnectionID
+	Connection     *webrtc.PeerConnection
+	Pool           *WebRTCPool
+	GatheringState webrtc.ICEGatheringState
+	candidates     []*webrtc.ICECandidate
+	channels       map[ChannelID]*ChannelData
+	tracks         map[TrackID]*TrackData
+
+	onICECandidateHandler func(*webrtc.ICECandidate, webrtc.ICEGatheringState)
 }
 
-func NewConnectionData(connID ConnectionID, connection *webrtc.PeerConnection, pool *WebRTCPool) (*ConnectionData, error) {
+func NewConnectionData(connID ConnectionID, connection *webrtc.PeerConnection, pool *WebRTCPool, handlers ...any) (*ConnectionData, error) {
 	if connection == nil || pool == nil {
 		return nil, fmt.Errorf("%s invalid.", connID)
 	}
-	return &ConnectionData{
-		ConnID:     connID,
-		Connection: connection,
-		Pool:       pool,
-		channels:   make(map[ChannelID]*ChannelData),
-		tracks:     make(map[TrackID]*TrackData),
-	}, nil
+	connData := ConnectionData{
+		ConnID:         connID,
+		Connection:     connection,
+		Pool:           pool,
+		GatheringState: webrtc.ICEGatheringStateNew,
+		candidates:     make([]*webrtc.ICECandidate, 0),
+		channels:       make(map[ChannelID]*ChannelData),
+		tracks:         make(map[TrackID]*TrackData),
+	}
+
+	for _, handler := range handlers {
+		// 使用类型断言判断类型并处理
+		switch v := handler.(type) {
+		case func(*webrtc.ICECandidate, webrtc.ICEGatheringState):
+			connData.onICECandidateHandler = v
+		}
+	}
+	return &connData, nil
 }
 
 func (d *ConnectionData) OnICEConnectionStateChange(state webrtc.ICEConnectionState) {
-	// This will notify you when the peer has connected/disconnected
-	log.Zap.Infof("ICEConnectionStateChange: %v\n", state)
+	log.Zap.Debugf("ConnID[%v] ICEConnectionStateChange: %v\n", d.ConnID, state)
+	switch state {
+	case webrtc.ICEConnectionStateNew:
+	case webrtc.ICEConnectionStateChecking:
+	case webrtc.ICEConnectionStateConnected:
+	case webrtc.ICEConnectionStateCompleted:
+	case webrtc.ICEConnectionStateDisconnected:
+	case webrtc.ICEConnectionStateFailed:
+	case webrtc.ICEConnectionStateClosed:
+	}
 }
 
 func (d *ConnectionData) OnICEGatheringStateChange(state webrtc.ICEGatheringState) {
-	log.Zap.Infof("ICEGatheringStateChange: %v\n", state)
+	log.Zap.Debugf("ConnID[%v] ICEGatheringStateChange: %v", d.ConnID, state)
+	d.GatheringState = state
 }
 
 func (d *ConnectionData) OnConnectionStateChange(state webrtc.PeerConnectionState) {
-	// This will notify you when the peer has connected/disconnected
-	log.Zap.Infof("Peer Connection State has changed: %s\n", state.String())
-	if state == webrtc.PeerConnectionStateFailed {
-		// Wait until PeerConnection has had no network activity for 30 seconds or another failure. It may be reconnected using an ICE Restart.
+	log.Zap.Debugf("ConnID[%v] ConnectionStateChange: %v", d.ConnID, state)
+	switch state {
+	case webrtc.PeerConnectionStateNew:
+	case webrtc.PeerConnectionStateConnecting:
+	case webrtc.PeerConnectionStateConnected:
+	case webrtc.PeerConnectionStateDisconnected:
+	case webrtc.PeerConnectionStateFailed:
+		// Wait until PeerConnection has had no network activity for 30 seconds or another failure.
+		// It may be reconnected using an ICE Restart.
 		// Use webrtc.PeerConnectionStateDisconnected if you are interested in detecting faster timeout.
 		// Note that the PeerConnection may come back from PeerConnectionStateDisconnected.
-		fmt.Println("Peer Connection has gone to failed exiting")
-	}
-
-	if state == webrtc.PeerConnectionStateClosed {
+	case webrtc.PeerConnectionStateClosed:
 		// PeerConnection was explicitly closed. This usually happens from a DTLS CloseNotify
-		fmt.Println("Peer Connection has gone to closed exiting")
 	}
 }
 
 func (d *ConnectionData) OnICECandidate(candidate *webrtc.ICECandidate) {
-	log.Zap.Infof("OnICECandidate: %v\n", candidate)
-	if candidate != nil {
-		//check(peerConnection.AddICECandidate(i.ToJSON()))
+	log.Zap.Debugf("ConnID[%v] OnICECandidate: %+v", d.ConnID, candidate)
+	handler := d.onICECandidateHandler
+	if handler != nil {
+		handler(candidate, d.GatheringState)
+	} else {
+		d.mu.Lock()
+		d.candidates = append(d.candidates, candidate)
+		d.mu.Unlock()
 	}
 }
 
 func (d *ConnectionData) OnDataChannel(channel *webrtc.DataChannel) {
-	log.Zap.Infof("New DataChannel %s %d\n", channel.Label(), channel.ID())
+	log.Zap.Debugf("ConnID[%v] DataChannel %s %d", d.ConnID, channel.Label(), channel.ID())
 
 	chanID := ChannelID(channel.Label())
 	cd, err := NewChannelData(chanID, channel, d)
@@ -125,6 +155,25 @@ func (d *ConnectionData) SetRemoteDescription(desc webrtc.SessionDescription) er
 	return nil
 }
 
+func (d *ConnectionData) AddRemoteCandidates(candidates ...*webrtc.ICECandidate) error {
+	for _, candidate := range candidates {
+		err := d.Connection.AddICECandidate(candidate.ToJSON())
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (d *ConnectionData) FetchLocalCandidates() ([]*webrtc.ICECandidate, webrtc.ICEGatheringState) {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+	candidates := make([]*webrtc.ICECandidate, len(d.candidates))
+	copy(candidates, d.candidates)
+	d.candidates = d.candidates[:0]
+	return candidates, d.GatheringState
+}
+
 func (d *ConnectionData) AddChannel(chanID ChannelID) (*ChannelData, error) {
 	channel, err := d.Connection.CreateDataChannel(string(chanID), nil)
 	if err != nil {
@@ -168,17 +217,6 @@ func (d *ConnectionData) AddTrack(id, streamID, mimeType string) (*TrackData, er
 	//	}
 	//}()
 	return trackData, nil
-}
-
-func (d *ConnectionData) WaitConnectionComplete() error {
-	// Create channel that is blocked until ICE Gathering is complete
-	gatherComplete := webrtc.GatheringCompletePromise(d.Connection)
-
-	// Block until ICE Gathering is complete, disabling trickle ICE
-	// we do this because we only can exchange one signaling message
-	// in a production application you should exchange ICE Candidates via OnICECandidate
-	<-gatherComplete
-	return nil
 }
 
 func (d *ConnectionData) GetChannelData(chanID ChannelID) *ChannelData {

@@ -9,6 +9,28 @@ import (
 
 var pools map[WebRTCID]*WebRTCPool
 
+func Init() {
+	pools = make(map[WebRTCID]*WebRTCPool)
+	confPools := conf.App.WebRTC.Pools
+	confICEServerURLs := conf.App.WebRTC.ICEServers
+	for i, confPool := range confPools {
+		webrtcID := NewWebRTCID(
+			NetType(confPool.NetType),
+			confPool.Address,
+			true,
+		)
+		webrtcPool, err := NewWebRTCPool(webrtcID, confICEServerURLs)
+		if err != nil {
+			log.Zap.Fatalf("[%d] NewWebRTCPool(%+v) error: %s", i, webrtcID, err)
+			return
+		}
+
+		pools[webrtcID] = webrtcPool
+		log.Zap.Debugf("[%d/%d] WebRTCPool(%+v) running", i+1, len(confPools), webrtcID)
+		break // TODO
+	}
+}
+
 func Pool(netType NetType, bindPort bool) (*WebRTCPool, error) {
 	for webrtcID, pool := range pools {
 		if webrtcID.NetType == netType {
@@ -22,23 +44,12 @@ func Pool(netType NetType, bindPort bool) (*WebRTCPool, error) {
 	return nil, fmt.Errorf("No valid pool for %s,%v", netType, bindPort)
 }
 
-func Init() {
-	pools = make(map[WebRTCID]*WebRTCPool)
-	iceServerURLs := conf.App.WebRTC.ICEServers
-	for i, confPool := range conf.App.WebRTC.Pools {
-		webrtcID := NewWebRTCID(
-			NetType(confPool.NetType),
-			confPool.Address,
-			true,
-		)
-		webrtcPool, err := NewWebRTCPool(webrtcID, iceServerURLs)
-		if err != nil {
-			log.Zap.Fatalf("[%d] NewWebRTCPool(%+v) error: %s", i, webrtcID, err)
-			return
+func GetConnection(connID ConnectionID) (*ConnectionData, error) {
+	for _, pool := range pools {
+		connData := pool.GetConnectionData(connID)
+		if connData != nil {
+			return connData, nil
 		}
-
-		pools[webrtcID] = webrtcPool
-		log.Zap.Debugf("[%d/%d] WebRTCPool(%+v) running", i, len(pools), webrtcID)
-		break // TODO
 	}
+	return nil, fmt.Errorf("No valid pool for ConnID[%v]", connID)
 }

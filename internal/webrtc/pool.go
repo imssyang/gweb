@@ -11,12 +11,16 @@ import (
 	"github.com/pion/webrtc/v4"
 )
 
-type NetType string
-
 const (
 	NetTypeUDP = "udp"
 	NetTypeTCP = "tcp"
 )
+
+type NetType string
+
+func (n NetType) String() string {
+	return string(n)
+}
 
 type WebRTCID struct {
 	NetType      NetType
@@ -123,7 +127,7 @@ func NewWebRTCPool(webrtcID WebRTCID, iceServerURLs []string) (*WebRTCPool, erro
 	}, nil
 }
 
-func (p *WebRTCPool) CreateConnection(connID ConnectionID, iceServerURLs []string) (*ConnectionData, error) {
+func (p *WebRTCPool) CreateConnection(connID ConnectionID, iceServerURLs []string, handlers ...any) (*ConnectionData, error) {
 	cd := p.GetConnectionData(connID)
 	if cd != nil {
 		return nil, fmt.Errorf("%s repeated.", connID)
@@ -141,7 +145,7 @@ func (p *WebRTCPool) CreateConnection(connID ConnectionID, iceServerURLs []strin
 		return nil, err
 	}
 
-	cd, err = NewConnectionData(connID, peerConnection, p)
+	cd, err = NewConnectionData(connID, peerConnection, p, handlers...)
 	if err != nil {
 		return nil, err
 	}

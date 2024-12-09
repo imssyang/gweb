@@ -10,8 +10,9 @@
   <script type="module">
     import { InitUI } from {{ .main }}
     InitUI({
-      url: {
-        prefix: {{ .prefix }},
+      webrtc: {
+        urlGroup: {{ .urlGroup }},
+        iceServerURLs: {{ .iceServerURLs | ToJS }},
       }
     })
   </script>

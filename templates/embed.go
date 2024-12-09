@@ -6,6 +6,7 @@ package templates
 
 import (
 	"embed"
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"time"
@@ -23,6 +24,13 @@ var (
 			timestamp := t.Format("2006/1/2 15:04:05.000")
 			unixTimestamp := t.Unix()
 			return fmt.Sprintf("%s (%d)", timestamp, unixTimestamp)
+		},
+		"ToJS": func(v any) template.JS {
+			jsBytes, err := json.Marshal(v)
+			if err != nil {
+				panic(err)
+			}
+			return template.JS(jsBytes)
 		},
 	}
 )

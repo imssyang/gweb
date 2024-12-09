@@ -42,9 +42,6 @@ type AppOpts struct {
 		} `yaml:"pools"`
 		ICEServers []string `yaml:"iceServers"`
 	} `yaml:"webrtc"`
-	Template   struct {
-		Files []string `yaml:"files"`
-	} `yaml:"template"`
 }
 
 func (o *AppOpts) Load(fileName string) error {

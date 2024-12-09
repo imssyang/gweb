@@ -48,7 +48,7 @@ func NewConnectionData(connID ConnectionID, connection *webrtc.PeerConnection, p
 }
 
 func (d *ConnectionData) OnICEConnectionStateChange(state webrtc.ICEConnectionState) {
-	log.Zap.Debugf("ConnID[%v] ICEConnectionStateChange: %v\n", d.ConnID, state)
+	log.Zap.Debugf("ConnID[%v] ICEConnectionStateChange: %v", d.ConnID, state)
 	switch state {
 	case webrtc.ICEConnectionStateNew:
 	case webrtc.ICEConnectionStateChecking:
@@ -83,14 +83,16 @@ func (d *ConnectionData) OnConnectionStateChange(state webrtc.PeerConnectionStat
 }
 
 func (d *ConnectionData) OnICECandidate(candidate *webrtc.ICECandidate) {
-	log.Zap.Debugf("ConnID[%v] OnICECandidate: %+v", d.ConnID, candidate)
+	log.Zap.Debugf("ConnID[%v] OnICECandidate: %v", d.ConnID, candidate)
 	handler := d.onICECandidateHandler
 	if handler != nil {
 		handler(candidate, d.GatheringState)
 	} else {
-		d.mu.Lock()
-		d.candidates = append(d.candidates, candidate)
-		d.mu.Unlock()
+		if candidate != nil {
+			d.mu.Lock()
+			d.candidates = append(d.candidates, candidate)
+			d.mu.Unlock()
+		}
 	}
 }
 
@@ -155,9 +157,9 @@ func (d *ConnectionData) SetRemoteDescription(desc webrtc.SessionDescription) er
 	return nil
 }
 
-func (d *ConnectionData) AddRemoteCandidates(candidates ...*webrtc.ICECandidate) error {
+func (d *ConnectionData) AddRemoteCandidates(candidates ...webrtc.ICECandidateInit) error {
 	for _, candidate := range candidates {
-		err := d.Connection.AddICECandidate(candidate.ToJSON())
+		err := d.Connection.AddICECandidate(candidate)
 		if err != nil {
 			return err
 		}

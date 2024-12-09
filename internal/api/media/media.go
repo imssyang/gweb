@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/imssyang/gweb/internal/conf"
 )
 
 const Name = "media"
@@ -25,11 +26,12 @@ func Register(engine *gin.Engine) {
 func (r *Router) index() {
 	r.Engine.GET("/"+Name, func(c *gin.Context) {
 		c.HTML(http.StatusOK, Name+"/index", gin.H{
-			"title":  "Media",
-			"icon":   "img/media.svg",
-			"style":  "css/media.min.css",
-			"main":   "/js/media.min.js",
-			"prefix": "/media",
+			"title":         "Media",
+			"icon":          "img/media.svg",
+			"style":         "css/media.min.css",
+			"main":          "/js/media.min.js",
+			"urlGroup":      "media",
+			"iceServerURLs": conf.App.WebRTC.ICEServers,
 		})
 	})
 }

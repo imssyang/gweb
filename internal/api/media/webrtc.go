@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/imssyang/gweb/internal/log"
@@ -25,6 +26,7 @@ func WebRTCRegister(engine *gin.Engine) {
 		RouterGroup: engine.Group(WebRTCName),
 	}
 	router.offer()
+	router.candidate()
 }
 
 type WebRTCBaseREQ struct {
@@ -85,16 +87,23 @@ func (r *WebRTCOfferRSP) SetDescription(desc webrtc.SessionDescription) error {
 
 func (r *WebRTCRouter) offer() {
 	r.Engine.POST("/"+WebRTCName+"/offer", func(c *gin.Context) {
-		rsp := WebRTCOfferRSP{}
-
-		var req WebRTCOfferREQ
+		connIDParam := c.DefaultQuery("connid", "")
+		rsp := WebRTCOfferRSP{
+			WebRTCBaseRSP: WebRTCBaseRSP{
+				ConnID: connIDParam,
+			},
+		}
+		req := WebRTCOfferREQ{
+			WebRTCBaseREQ: WebRTCBaseREQ{
+				ConnID: connIDParam,
+			},
+		}
 		if err := c.BindJSON(&req); err != nil {
 			rsp.Err = fmt.Sprintf("Failed to parse JSON: %v", err)
 			c.JSON(http.StatusBadRequest, rsp)
 			return
 		}
 
-		rsp.ConnID = req.ConnID
 		remoteDesc, err := req.GetDescription()
 		if err != nil {
 			rsp.Err = fmt.Sprintf("Failed to parse description: %v", err)
@@ -128,7 +137,7 @@ func (r *WebRTCRouter) offer() {
 			return
 		}
 
-		localDesc, err := connData.SetLocalDescription(webrtc.SDPTypeAnswer, true)
+		localDesc, err := connData.SetLocalDescription(webrtc.SDPTypeAnswer, false)
 		if err != nil {
 			rsp.Err = fmt.Sprintf("Failed to set local description: %v", err)
 			c.JSON(http.StatusServiceUnavailable, rsp)
@@ -144,15 +153,16 @@ func (r *WebRTCRouter) offer() {
 
 type WebRTCCandidateREQ struct {
 	WebRTCBaseREQ
-	Candidates []*webrtc.ICECandidate `json:"iceCandidates"`
+	Candidates []webrtc.ICECandidateInit `json:"iceCandidates"`
 }
 
 type WebRTCCandidateRSP struct {
 	WebRTCBaseRSP
-	Candidates []*webrtc.ICECandidate `json:"iceCandidates"`
+	Candidates     []webrtc.ICECandidateInit `json:"iceCandidates"`
+	GatheringState string                    `json:"iceGatheringState"`
 }
 
-func (r *WebRTCCandidateRSP) SetCandidates(candidates ...*webrtc.ICECandidate) {
+func (r *WebRTCCandidateRSP) SetCandidates(candidates ...webrtc.ICECandidateInit) {
 	for _, candidate := range candidates {
 		r.Candidates = append(r.Candidates, candidate)
 	}
@@ -160,20 +170,26 @@ func (r *WebRTCCandidateRSP) SetCandidates(candidates ...*webrtc.ICECandidate) {
 
 func (r *WebRTCRouter) candidate() {
 	r.Engine.POST("/"+WebRTCName+"/candidate", func(c *gin.Context) {
+		connIDParam := c.DefaultQuery("connid", "")
 		rsp := WebRTCCandidateRSP{
-			Candidates: make([]*webrtc.ICECandidate, 0),
+			WebRTCBaseRSP: WebRTCBaseRSP{
+				ConnID: connIDParam,
+			},
 		}
-
-		var req WebRTCCandidateREQ
+		req := WebRTCCandidateREQ{
+			WebRTCBaseREQ: WebRTCBaseREQ{
+				ConnID: connIDParam,
+			},
+			Candidates: make([]webrtc.ICECandidateInit, 0),
+		}
 		if err := c.BindJSON(&req); err != nil {
 			rsp.Err = fmt.Sprintf("Failed to parse JSON: %v", err)
 			c.JSON(http.StatusBadRequest, rsp)
 			return
 		}
 
-		rsp.ConnID = req.ConnID
 		connID := webrtc_.ConnectionID(req.ConnID)
-		connData, err := webrtc_.GetConnection(connID)
+		connData, err := webrtc_.GetConnection(connID, 3*time.Second)
 		if err != nil {
 			rsp.Err = fmt.Sprintf("Failed to find webrtc connection: %v", err)
 			c.JSON(http.StatusBadRequest, rsp)
@@ -187,7 +203,39 @@ func (r *WebRTCRouter) candidate() {
 			return
 		}
 
-		log.Zap.Debugf("ConnID[%v] add RemoteCandidates: %+v\n", connID, req.Candidates)
+		log.Zap.Debugf("ConnID[%v] add RemoteCandidates: %v", req.ConnID, req.Candidates)
+		c.JSON(http.StatusOK, rsp)
+	})
+
+	r.Engine.GET("/"+WebRTCName+"/candidate", func(c *gin.Context) {
+		connIDParam := c.DefaultQuery("connid", "")
+		rsp := WebRTCCandidateRSP{
+			WebRTCBaseRSP: WebRTCBaseRSP{
+				ConnID: connIDParam,
+			},
+			Candidates: make([]webrtc.ICECandidateInit, 0),
+		}
+		req := WebRTCCandidateREQ{
+			WebRTCBaseREQ: WebRTCBaseREQ{
+				ConnID: connIDParam,
+			},
+		}
+
+		connID := webrtc_.ConnectionID(req.ConnID)
+		connData, err := webrtc_.GetConnection(connID, 3*time.Second)
+		if err != nil {
+			rsp.Err = fmt.Sprintf("Failed to find webrtc connection: %v", err)
+			c.JSON(http.StatusBadRequest, rsp)
+			return
+		}
+
+		candidates, gatheringState := connData.FetchLocalCandidates()
+		for _, candidate := range candidates {
+			rsp.Candidates = append(rsp.Candidates, candidate.ToJSON())
+		}
+		rsp.GatheringState = gatheringState.String()
+
+		log.Zap.Debugf("ConnID[%v] LocalCandidates: %v", req.ConnID, req.Candidates)
 		c.JSON(http.StatusOK, rsp)
 	})
 }

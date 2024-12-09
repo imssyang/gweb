@@ -2,6 +2,7 @@ package webrtc
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/imssyang/gweb/internal/conf"
 	"github.com/imssyang/gweb/internal/log"
@@ -44,12 +45,21 @@ func Pool(netType NetType, bindPort bool) (*WebRTCPool, error) {
 	return nil, fmt.Errorf("No valid pool for %s,%v", netType, bindPort)
 }
 
-func GetConnection(connID ConnectionID) (*ConnectionData, error) {
-	for _, pool := range pools {
-		connData := pool.GetConnectionData(connID)
-		if connData != nil {
-			return connData, nil
+func GetConnection(connID ConnectionID, timeout time.Duration) (*ConnectionData, error) {
+	timeoutTimer := time.NewTimer(timeout)
+	ticker := time.NewTicker(50 * time.Millisecond)
+
+	for {
+		select {
+		case <-timeoutTimer.C:
+			return nil, fmt.Errorf("Timeout to get connect for ConnID[%v]", connID)
+		case <-ticker.C:
+			for _, pool := range pools {
+				connData := pool.GetConnectionData(connID)
+				if connData != nil {
+					return connData, nil
+				}
+			}
 		}
 	}
-	return nil, fmt.Errorf("No valid pool for ConnID[%v]", connID)
 }

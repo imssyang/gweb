@@ -80,9 +80,9 @@ func Action(ctx *cli.Context) error {
 	engine.Use(gin.Recovery())
 	templates.Init(engine)
 	public.Init(engine)
+	api.Register(engine)
 	webrtc.Init()
 
-	api.Register(engine)
 	server := &http.Server{
 		Addr:           conf.App.HTTP.Address,
 		Handler:        engine,

@@ -9,10 +9,6 @@ import (
 	"github.com/imssyang/gweb/internal/api/media"
 )
 
-type Router struct {
-	*gin.Engine
-}
-
 func Register(engine *gin.Engine) {
 	router := &Router{
 		Engine: engine,
@@ -22,6 +18,10 @@ func Register(engine *gin.Engine) {
 	router.health()
 	formatify.Register(engine)
 	media.Register(engine)
+}
+
+type Router struct {
+	*gin.Engine
 }
 
 func (r *Router) detect() {

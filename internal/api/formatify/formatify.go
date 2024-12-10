@@ -9,25 +9,29 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-const Name = "formatify"
-
-type Router struct {
-	*gin.Engine
-	*gin.RouterGroup
-}
-
 func Register(engine *gin.Engine) {
-	router := &Router{
-		Engine:      engine,
-		RouterGroup: engine.Group(Name),
-	}
+	router := NewRouter(engine, "formatify")
 	router.index()
 	router.mode()
 }
 
+type Router struct {
+	Name string
+	*gin.Engine
+	*gin.RouterGroup
+}
+
+func NewRouter(engine *gin.Engine, name string) *Router {
+	return &Router{
+		Name:        name,
+		Engine:      engine,
+		RouterGroup: engine.Group(name),
+	}
+}
+
 func (r *Router) index() {
-	r.Engine.GET("/"+Name, func(c *gin.Context) {
-		c.HTML(http.StatusOK, Name+"/index", gin.H{
+	r.Engine.GET("/"+r.Name, func(c *gin.Context) {
+		c.HTML(http.StatusOK, r.Name+"/index", gin.H{
 			"title":  "Formatify",
 			"icon":   "img/formatify.svg",
 			"style":  "css/formatify.min.css",
@@ -38,7 +42,7 @@ func (r *Router) index() {
 }
 
 func (r *Router) mode() {
-	r.Engine.POST("/"+Name+"/:mode/:action", func(c *gin.Context) {
+	r.Engine.POST("/"+r.Name+"/:mode/:action", func(c *gin.Context) {
 		escapeValue := c.DefaultQuery("escape", "false")
 		hasEscape, err := strconv.ParseBool(escapeValue)
 		if err != nil {

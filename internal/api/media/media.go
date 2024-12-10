@@ -4,33 +4,38 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/imssyang/gweb/internal/api/media/webrtc"
 	"github.com/imssyang/gweb/internal/conf"
 )
 
-const Name = "media"
+func Register(engine *gin.Engine) {
+	router := NewRouter(engine, "media")
+	router.index()
+	webrtc.Register(engine, router.Name)
+}
 
 type Router struct {
+	Name string
 	*gin.Engine
 	*gin.RouterGroup
 }
 
-func Register(engine *gin.Engine) {
-	router := &Router{
+func NewRouter(engine *gin.Engine, name string) *Router {
+	return &Router{
+		Name:        name,
 		Engine:      engine,
-		RouterGroup: engine.Group(Name),
+		RouterGroup: engine.Group(name),
 	}
-	router.index()
-	WebRTCRegister(engine)
 }
 
 func (r *Router) index() {
-	r.Engine.GET("/"+Name, func(c *gin.Context) {
-		c.HTML(http.StatusOK, Name+"/index", gin.H{
+	r.Engine.GET("/"+r.Name, func(c *gin.Context) {
+		c.HTML(http.StatusOK, r.Name+"/index", gin.H{
 			"title":         "Media",
 			"icon":          "img/media.svg",
 			"style":         "css/media.min.css",
 			"main":          "/js/media.min.js",
-			"urlGroup":      "media",
+			"urlGroup":      r.Name,
 			"iceServerURLs": conf.App.WebRTC.ICEServers,
 		})
 	})

@@ -16,7 +16,7 @@ func Init() {
 	confICEServerURLs := conf.App.WebRTC.ICEServers
 	for i, confPool := range confPools {
 		webrtcID := NewWebRTCID(
-			NetType(confPool.NetType),
+			NetworkType(confPool.Network),
 			confPool.Address,
 			true,
 		)
@@ -32,9 +32,9 @@ func Init() {
 	}
 }
 
-func Pool(netType NetType, bindPort bool) (*WebRTCPool, error) {
+func Pool(network NetworkType, bindPort bool) (*WebRTCPool, error) {
 	for webrtcID, pool := range pools {
-		if webrtcID.NetType == netType {
+		if webrtcID.Network == network {
 			if bindPort && webrtcID.LocalPort == 0 {
 				log.Zap.Debugf("Ignore WebRTCPool: %+v", webrtcID)
 				continue
@@ -42,7 +42,7 @@ func Pool(netType NetType, bindPort bool) (*WebRTCPool, error) {
 			return pool, nil
 		}
 	}
-	return nil, fmt.Errorf("No valid pool for %s,%v", netType, bindPort)
+	return nil, fmt.Errorf("No valid pool for %s,%v", network, bindPort)
 }
 
 func GetConnection(connID ConnectionID, timeout time.Duration) (*ConnectionData, error) {

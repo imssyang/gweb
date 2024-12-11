@@ -18,7 +18,7 @@ type RTCAnswerREQ struct {
 	Description string `json:"description"`
 }
 
-func (r *RTCAnswerREQ) GetDescription() (webrtc.SessionDescription, error) {
+func (m *RTCAnswerREQ) GetDescription() (webrtc.SessionDescription, error) {
 	descJson, err := base64.StdEncoding.DecodeString(m.Description)
 	if err != nil {
 		return webrtc.SessionDescription{}, err

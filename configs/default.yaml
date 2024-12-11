@@ -6,10 +6,10 @@ http:
     write: 10s
 webrtc:
   pools:
-    - netType: udp
-    - netType: udp
+    - network: udp
+    - network: udp
       address: ":5678"
-    - netType: tcp
+    - network: tcp
       address: ":2345"
   iceServers:
     - "stun:stun.l.google.com:19302"

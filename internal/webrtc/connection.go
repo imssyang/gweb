@@ -39,7 +39,6 @@ func NewConnectionData(connID ConnectionID, connection *webrtc.PeerConnection, p
 	}
 
 	for _, handler := range handlers {
-		// 使用类型断言判断类型并处理
 		switch v := handler.(type) {
 		case func(*webrtc.ICECandidate, webrtc.ICEGatheringState):
 			connData.onICECandidateHandler = v
@@ -73,13 +72,11 @@ func (d *ConnectionData) OnConnectionStateChange(state webrtc.PeerConnectionStat
 	case webrtc.PeerConnectionStateConnecting:
 	case webrtc.PeerConnectionStateConnected:
 	case webrtc.PeerConnectionStateDisconnected:
+		d.Pool.CloseConnection(d.ConnID)
 	case webrtc.PeerConnectionStateFailed:
-		// Wait until PeerConnection has had no network activity for 30 seconds or another failure.
-		// It may be reconnected using an ICE Restart.
-		// Use webrtc.PeerConnectionStateDisconnected if you are interested in detecting faster timeout.
-		// Note that the PeerConnection may come back from PeerConnectionStateDisconnected.
+		d.Pool.CloseConnection(d.ConnID)
 	case webrtc.PeerConnectionStateClosed:
-		// PeerConnection was explicitly closed. This usually happens from a DTLS CloseNotify
+		d.Pool.CloseConnection(d.ConnID)
 	}
 }
 

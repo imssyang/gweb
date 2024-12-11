@@ -12,24 +12,24 @@ import (
 )
 
 const (
-	NetTypeUDP = "udp"
-	NetTypeTCP = "tcp"
+	NetworkUDP = "udp"
+	NetworkTCP = "tcp"
 )
 
-type NetType string
+type NetworkType string
 
-func (n NetType) String() string {
+func (n NetworkType) String() string {
 	return string(n)
 }
 
 type WebRTCID struct {
-	NetType      NetType
+	Network      NetworkType
 	LocalIP      string
 	LocalPort    int
 	EnableDetach bool
 }
 
-func NewWebRTCID(netType NetType, address string, enableDetach bool) WebRTCID {
+func NewWebRTCID(network NetworkType, address string, enableDetach bool) WebRTCID {
 	var (
 		localIp   string
 		localPort int
@@ -51,7 +51,7 @@ func NewWebRTCID(netType NetType, address string, enableDetach bool) WebRTCID {
 	}
 
 	return WebRTCID{
-		NetType:      netType,
+		Network:      network,
 		LocalIP:      localIp,
 		LocalPort:    localPort,
 		EnableDetach: enableDetach,
@@ -74,8 +74,8 @@ func NewWebRTCPool(webrtcID WebRTCID, iceServerURLs []string) (*WebRTCPool, erro
 
 	localIP := webrtcID.LocalIP
 	localPort := webrtcID.LocalPort
-	switch webrtcID.NetType {
-	case NetTypeUDP:
+	switch webrtcID.Network {
+	case NetworkUDP:
 		if localPort != 0 {
 			if len(localIP) == 0 {
 				mux, err := ice.NewMultiUDPMuxFromPort(localPort)
@@ -92,7 +92,7 @@ func NewWebRTCPool(webrtcID WebRTCID, iceServerURLs []string) (*WebRTCPool, erro
 				webrtc.NewICEUDPMux(nil, conn)
 			}
 		}
-	case NetTypeTCP:
+	case NetworkTCP:
 		if localPort == 0 {
 			return nil, fmt.Errorf("Invalid parameter: %+v", webrtcID)
 		}
@@ -205,13 +205,16 @@ func (p *WebRTCPool) CloseConnection(connID ConnectionID) error {
 		return fmt.Errorf("%s not found", connID)
 	}
 
-	if err := cd.Connection.Close(); err != nil {
-		return err
-	}
-
 	p.mu.Lock()
 	delete(p.connections, connID)
 	p.mu.Unlock()
+
+	defer func() {
+		if err := cd.Connection.Close(); err != nil {
+			log.Zap.Errorf("Failed to close connection(%v): %v", connID, err)
+		}
+	}()
+
 	return nil
 }
 

@@ -37,7 +37,7 @@ type AppOpts struct {
 	} `yaml:"http"`
 	WebRTC struct {
 		Pools []struct {
-			NetType string `yaml:"netType"`
+			Network string `yaml:"network"`
 			Address string `yaml:"address"`
 		} `yaml:"pools"`
 		ICEServers []string `yaml:"iceServers"`

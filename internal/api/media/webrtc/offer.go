@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/imssyang/gweb/internal/log"
@@ -87,15 +86,15 @@ func NewRTCOfferMSG(connID string) *RTCOfferMSG {
 
 func (m *RTCOfferMSG) connection(c *gin.Context) (*webrtc_.ConnectionData, error) {
 	connID := webrtc_.ConnectionID(m.REQ.ConnID)
-	_, err := webrtc_.GetConnection(connID, 3*time.Second)
-	if err == nil {
-		m.RSP.Err = fmt.Sprintf("Repead connected: %v", err)
+	connData := webrtc_.Connection(connID)
+	if connData != nil {
+		m.RSP.Err = fmt.Sprintf("Repead connected: %v", connID)
 		c.JSON(http.StatusBadRequest, m.RSP)
-		return nil, fmt.Errorf("RepeadConnection: %s", m.REQ.ConnID)
+		return nil, fmt.Errorf("RepeadConnection: %v", connID)
 	}
 
 	network := m.REQ.GetNetwork()
-	webrtcPool, err := webrtc_.Pool(network, m.REQ.PeerBindPort)
+	poolData, err := webrtc_.Pool(network, m.REQ.PeerBindPort)
 	if err != nil {
 		m.RSP.Err = fmt.Sprintf("Failed to find webrtc pool: %v", err)
 		c.JSON(http.StatusServiceUnavailable, m.RSP)
@@ -103,7 +102,7 @@ func (m *RTCOfferMSG) connection(c *gin.Context) (*webrtc_.ConnectionData, error
 	}
 
 	m.RSP.PreferNetwork = network.String()
-	connData, err := webrtcPool.CreateConnection(connID, m.REQ.ICEServerURLs)
+	connData, err = poolData.CreateConnection(connID, m.REQ.ICEServerURLs)
 	if err != nil {
 		m.RSP.Err = fmt.Sprintf("Failed to create webrtc connection: %v", err)
 		c.JSON(http.StatusServiceUnavailable, m.RSP)

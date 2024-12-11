@@ -14,7 +14,7 @@ type ConnectionData struct {
 	mu             sync.RWMutex
 	ConnID         ConnectionID
 	Connection     *webrtc.PeerConnection
-	Pool           *WebRTCPool
+	Pool           *PoolData
 	GatheringState webrtc.ICEGatheringState
 	candidates     []*webrtc.ICECandidate
 	channels       map[ChannelID]*ChannelData
@@ -24,7 +24,7 @@ type ConnectionData struct {
 	onICECandidateHandler func(*webrtc.ICECandidate, webrtc.ICEGatheringState)
 }
 
-func NewConnectionData(connID ConnectionID, connection *webrtc.PeerConnection, pool *WebRTCPool, handlers ...any) (*ConnectionData, error) {
+func NewConnectionData(connID ConnectionID, connection *webrtc.PeerConnection, pool *PoolData, handlers ...any) (*ConnectionData, error) {
 	if connection == nil || pool == nil {
 		return nil, fmt.Errorf("%s invalid.", connID)
 	}
@@ -188,7 +188,7 @@ func (d *ConnectionData) AddChannel(chanID ChannelID) (*ChannelData, error) {
 	}
 
 	d.OnDataChannel(channel)
-	chanData := d.GetChannelData(chanID)
+	chanData := d.GetChannel(chanID)
 	if chanData == nil {
 		return nil, fmt.Errorf("%s invalid.", chanID)
 	}
@@ -226,7 +226,7 @@ func (d *ConnectionData) AddTrack(id, streamID, mimeType string) (*TrackData, er
 	return trackData, nil
 }
 
-func (d *ConnectionData) GetChannelData(chanID ChannelID) *ChannelData {
+func (d *ConnectionData) GetChannel(chanID ChannelID) *ChannelData {
 	d.mu.RLock()
 	defer d.mu.RUnlock()
 	cd, exists := d.channels[chanID]
@@ -236,7 +236,7 @@ func (d *ConnectionData) GetChannelData(chanID ChannelID) *ChannelData {
 	return nil
 }
 
-func (d *ConnectionData) GetTrackData(trackID TrackID) *TrackData {
+func (d *ConnectionData) GetTrack(trackID TrackID) *TrackData {
 	d.mu.RLock()
 	defer d.mu.RUnlock()
 	td, exists := d.tracks[trackID]

@@ -104,7 +104,7 @@ func zapLogger(w io.Writer) (*zap.SugaredLogger, zap.AtomicLevel) {
 		level,
 	)
 
-	return zap.New(core).Sugar(), level
+	return zap.New(core, zap.AddCaller()).Sugar(), level
 }
 
 func logFormatter(param gin.LogFormatterParams) string {

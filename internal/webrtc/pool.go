@@ -22,14 +22,14 @@ func (n NetworkType) String() string {
 	return string(n)
 }
 
-type WebRTCID struct {
+type PoolID struct {
 	Network      NetworkType
 	LocalIP      string
 	LocalPort    int
 	EnableDetach bool
 }
 
-func NewWebRTCID(network NetworkType, address string, enableDetach bool) WebRTCID {
+func NewPoolID(network NetworkType, address string, enableDetach bool) PoolID {
 	var (
 		localIp   string
 		localPort int
@@ -50,7 +50,7 @@ func NewWebRTCID(network NetworkType, address string, enableDetach bool) WebRTCI
 		}
 	}
 
-	return WebRTCID{
+	return PoolID{
 		Network:      network,
 		LocalIP:      localIp,
 		LocalPort:    localPort,
@@ -58,23 +58,23 @@ func NewWebRTCID(network NetworkType, address string, enableDetach bool) WebRTCI
 	}
 }
 
-type WebRTCPool struct {
+type PoolData struct {
 	mu            sync.RWMutex
-	ID            WebRTCID
+	ID            PoolID
 	API           *webrtc.API
 	ICEServerURLs []string
 	connections   map[ConnectionID]*ConnectionData
 }
 
-func NewWebRTCPool(webrtcID WebRTCID, iceServerURLs []string) (*WebRTCPool, error) {
+func NewPoolData(poolID PoolID, iceServerURLs []string) (*PoolData, error) {
 	settingEngine := webrtc.SettingEngine{}
-	if webrtcID.EnableDetach {
+	if poolID.EnableDetach {
 		settingEngine.DetachDataChannels()
 	}
 
-	localIP := webrtcID.LocalIP
-	localPort := webrtcID.LocalPort
-	switch webrtcID.Network {
+	localIP := poolID.LocalIP
+	localPort := poolID.LocalPort
+	switch poolID.Network {
 	case NetworkUDP:
 		if localPort != 0 {
 			if len(localIP) == 0 {
@@ -94,7 +94,7 @@ func NewWebRTCPool(webrtcID WebRTCID, iceServerURLs []string) (*WebRTCPool, erro
 		}
 	case NetworkTCP:
 		if localPort == 0 {
-			return nil, fmt.Errorf("Invalid parameter: %+v", webrtcID)
+			return nil, fmt.Errorf("Invalid parameter: %+v", poolID)
 		}
 
 		settingEngine.SetNetworkTypes([]webrtc.NetworkType{
@@ -117,8 +117,8 @@ func NewWebRTCPool(webrtcID WebRTCID, iceServerURLs []string) (*WebRTCPool, erro
 		return nil, err
 	}
 
-	return &WebRTCPool{
-		ID: webrtcID,
+	return &PoolData{
+		ID: poolID,
 		API: webrtc.NewAPI(
 			webrtc.WithSettingEngine(settingEngine),
 			webrtc.WithMediaEngine(media)),
@@ -127,8 +127,8 @@ func NewWebRTCPool(webrtcID WebRTCID, iceServerURLs []string) (*WebRTCPool, erro
 	}, nil
 }
 
-func (p *WebRTCPool) CreateConnection(connID ConnectionID, iceServerURLs []string, handlers ...any) (*ConnectionData, error) {
-	cd := p.GetConnectionData(connID)
+func (p *PoolData) CreateConnection(connID ConnectionID, iceServerURLs []string, handlers ...any) (*ConnectionData, error) {
+	cd := p.GetConnection(connID)
 	if cd != nil {
 		return nil, fmt.Errorf("%s repeated.", connID)
 	}
@@ -176,7 +176,7 @@ func (p *WebRTCPool) CreateConnection(connID ConnectionID, iceServerURLs []strin
 	return cd, nil
 }
 
-func (p *WebRTCPool) ChooseICEServerURLs(connURLs []string, confURLs []string) []string {
+func (p *PoolData) ChooseICEServerURLs(connURLs []string, confURLs []string) []string {
 	if len(connURLs) == 0 {
 		return []string{} // confURLs
 	}
@@ -199,8 +199,8 @@ func (p *WebRTCPool) ChooseICEServerURLs(connURLs []string, confURLs []string) [
 	return []string{} //  confURLs
 }
 
-func (p *WebRTCPool) CloseConnection(connID ConnectionID) error {
-	cd := p.GetConnectionData(connID)
+func (p *PoolData) CloseConnection(connID ConnectionID) error {
+	cd := p.GetConnection(connID)
 	if cd == nil {
 		return fmt.Errorf("%s not found", connID)
 	}
@@ -218,7 +218,7 @@ func (p *WebRTCPool) CloseConnection(connID ConnectionID) error {
 	return nil
 }
 
-func (p *WebRTCPool) GetConnectionData(connID ConnectionID) *ConnectionData {
+func (p *PoolData) GetConnection(connID ConnectionID) *ConnectionData {
 	p.mu.RLock()
 	defer p.mu.RUnlock()
 	cd, exists := p.connections[connID]

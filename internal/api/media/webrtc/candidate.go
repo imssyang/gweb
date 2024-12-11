@@ -46,7 +46,7 @@ func NewICECandidatesMSG(connID string) *ICECandidatesMSG {
 
 func (m *ICECandidatesMSG) GetCandidates(c *gin.Context) {
 	connID := webrtc_.ConnectionID(m.REQ.ConnID)
-	connData, err := webrtc_.GetConnection(connID, 3*time.Second)
+	connData, err := webrtc_.ConnectionWithTimeout(connID, 3*time.Second)
 	if err != nil {
 		m.RSP.Err = fmt.Sprintf("Failed to find webrtc connection: %v", err)
 		c.JSON(http.StatusBadRequest, m.RSP)
@@ -65,7 +65,7 @@ func (m *ICECandidatesMSG) GetCandidates(c *gin.Context) {
 
 func (m *ICECandidatesMSG) SetCandidates(c *gin.Context) {
 	connID := webrtc_.ConnectionID(m.REQ.ConnID)
-	connData, err := webrtc_.GetConnection(connID, 3*time.Second)
+	connData, err := webrtc_.ConnectionWithTimeout(connID, 3*time.Second)
 	if err != nil {
 		m.RSP.Err = fmt.Sprintf("Failed to find webrtc connection: %v", err)
 		c.JSON(http.StatusBadRequest, m.RSP)

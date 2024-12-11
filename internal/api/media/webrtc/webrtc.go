@@ -7,6 +7,7 @@ import (
 func Register(engine *gin.Engine, name string) {
 	router := NewRouter(engine, name+"/webrtc")
 	router.offer()
+	router.answer()
 	router.candidate()
 }
 

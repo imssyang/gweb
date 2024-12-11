@@ -19,6 +19,7 @@ type ConnectionData struct {
 	candidates     []*webrtc.ICECandidate
 	channels       map[ChannelID]*ChannelData
 	tracks         map[TrackID]*TrackData
+	streamURLs     []string
 
 	onICECandidateHandler func(*webrtc.ICECandidate, webrtc.ICEGatheringState)
 }
@@ -124,6 +125,20 @@ func (d *ConnectionData) OnDataChannel(channel *webrtc.DataChannel) {
 	})
 }
 
+func (d *ConnectionData) SetStreamURLs(StreamURLs []string) error {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+	d.streamURLs = StreamURLs
+	return nil
+}
+
+func (d *ConnectionData) SetRemoteDescription(desc webrtc.SessionDescription) error {
+	if err := d.Connection.SetRemoteDescription(desc); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (d *ConnectionData) SetLocalDescription(sdpType webrtc.SDPType, waitGatheringComplete bool) (webrtc.SessionDescription, error) {
 	var desc webrtc.SessionDescription
 	var err error
@@ -148,13 +163,6 @@ func (d *ConnectionData) SetLocalDescription(sdpType webrtc.SDPType, waitGatheri
 	} else {
 		return desc, nil
 	}
-}
-
-func (d *ConnectionData) SetRemoteDescription(desc webrtc.SessionDescription) error {
-	if err := d.Connection.SetRemoteDescription(desc); err != nil {
-		return err
-	}
-	return nil
 }
 
 func (d *ConnectionData) AddRemoteCandidates(candidates ...webrtc.ICECandidateInit) error {

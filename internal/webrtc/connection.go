@@ -18,8 +18,7 @@ type ConnectionData struct {
 	GatheringState webrtc.ICEGatheringState
 	candidates     []*webrtc.ICECandidate
 	channels       map[ChannelID]*ChannelData
-	tracks         map[TrackID]*TrackData
-	streamURLs     []string
+	streams        map[string]*StreamData
 
 	onICECandidateHandler func(*webrtc.ICECandidate, webrtc.ICEGatheringState)
 }
@@ -35,7 +34,7 @@ func NewConnectionData(connID ConnectionID, connection *webrtc.PeerConnection, p
 		GatheringState: webrtc.ICEGatheringStateNew,
 		candidates:     make([]*webrtc.ICECandidate, 0),
 		channels:       make(map[ChannelID]*ChannelData),
-		tracks:         make(map[TrackID]*TrackData),
+		streams:        make(map[string]*StreamData),
 	}
 
 	for _, handler := range handlers {
@@ -122,10 +121,17 @@ func (d *ConnectionData) OnDataChannel(channel *webrtc.DataChannel) {
 	})
 }
 
-func (d *ConnectionData) SetStreamURLs(StreamURLs []string) error {
-	d.mu.Lock()
-	defer d.mu.Unlock()
-	d.streamURLs = StreamURLs
+func (d *ConnectionData) SetStreamURLs(streamURLs []string) error {
+	for _, url := range streamURLs {
+		sd, err := NewStreamData(url, d)
+		if err != nil {
+			return err
+		}
+
+		d.mu.Lock()
+		d.streams[url] = sd
+		d.mu.Unlock()
+	}
 	return nil
 }
 
@@ -195,37 +201,6 @@ func (d *ConnectionData) AddChannel(chanID ChannelID) (*ChannelData, error) {
 	return chanData, nil
 }
 
-func (d *ConnectionData) AddTrack(id, streamID, mimeType string) (*TrackData, error) {
-	trackLocal, err := webrtc.NewTrackLocalStaticSample(webrtc.RTPCodecCapability{MimeType: mimeType}, id, streamID)
-	if err != nil {
-		return nil, err
-	}
-
-	rtpSender, err := d.Connection.AddTrack(trackLocal)
-	if err != nil {
-		return nil, err
-	}
-
-	trackID := NewTrackID(id, streamID, mimeType)
-	trackData, err := NewTrackData(trackID, trackLocal, rtpSender, d)
-	if err != nil {
-		return nil, err
-	}
-
-	// Read incoming RTCP packets
-	// Before these packets are returned they are processed by interceptors. For things
-	// like NACK this needs to be called.
-	//go func() {
-	//	rtcpBuf := make([]byte, 1500)
-	//	for {
-	//		if _, _, rtcpErr := rtpSender.Read(rtcpBuf); rtcpErr != nil {
-	//			return
-	//		}
-	//	}
-	//}()
-	return trackData, nil
-}
-
 func (d *ConnectionData) GetChannel(chanID ChannelID) *ChannelData {
 	d.mu.RLock()
 	defer d.mu.RUnlock()
@@ -236,10 +211,10 @@ func (d *ConnectionData) GetChannel(chanID ChannelID) *ChannelData {
 	return nil
 }
 
-func (d *ConnectionData) GetTrack(trackID TrackID) *TrackData {
+func (d *ConnectionData) GetStream(streamID string) *StreamData {
 	d.mu.RLock()
 	defer d.mu.RUnlock()
-	td, exists := d.tracks[trackID]
+	td, exists := d.streams[streamID]
 	if exists {
 		return td
 	}

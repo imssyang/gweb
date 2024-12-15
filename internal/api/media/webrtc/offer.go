@@ -14,7 +14,7 @@ import (
 
 type RTCOfferREQ struct {
 	BaseREQ
-	StreamURLs    []string `json:"StreamURLs"`
+	StreamURLs    []string `json:"streamURLs"`
 	PreferNetwork string   `json:"preferNetwork"`
 	PeerBindPort  bool     `json:"peerBindPort"`
 	Description   string   `json:"description"`

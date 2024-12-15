@@ -33,7 +33,7 @@ func NewIVFParser(path string) (*IVFParser, error) {
 	return ivf, nil
 }
 
-func (p *IVFParser) WebRTCMimeType() string {
+func (p IVFParser) MimeType() string {
 	switch p.Header.FourCC {
 	case "AV01":
 		return webrtc.MimeTypeAV1
@@ -44,4 +44,8 @@ func (p *IVFParser) WebRTCMimeType() string {
 	default:
 		return ""
 	}
+}
+
+func (p IVFParser) NextFrame() ([]byte, any, error) {
+	return p.Reader.ParseNextFrame()
 }

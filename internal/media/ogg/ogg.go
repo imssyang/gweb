@@ -3,6 +3,7 @@ package ogg
 import (
 	"os"
 
+	"github.com/pion/webrtc/v4"
 	"github.com/pion/webrtc/v4/pkg/media/oggreader"
 )
 
@@ -13,11 +14,11 @@ type OggParser struct {
 }
 
 func NewOggParser(path string) (*OggParser, error) {
-	ivf := &OggParser{
+	ogg := &OggParser{
 		Path: path,
 	}
 
-	file, err := os.Open(ivf.Path)
+	file, err := os.Open(path)
 	if err != nil {
 		return nil, err
 	}
@@ -27,7 +28,15 @@ func NewOggParser(path string) (*OggParser, error) {
 		return nil, err
 	}
 
-	ivf.Header = header
-	ivf.Reader = reader
-	return ivf, nil
+	ogg.Header = header
+	ogg.Reader = reader
+	return ogg, nil
+}
+
+func (p OggParser) MimeType() string {
+	return webrtc.MimeTypeOpus
+}
+
+func (p OggParser) NextFrame() ([]byte, any, error) {
+	return p.Reader.ParseNextPage()
 }

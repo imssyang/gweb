@@ -52,6 +52,12 @@ func (d *ConnectionData) OnICEConnectionStateChange(state webrtc.ICEConnectionSt
 	case webrtc.ICEConnectionStateNew:
 	case webrtc.ICEConnectionStateChecking:
 	case webrtc.ICEConnectionStateConnected:
+		d.mu.RLock()
+		defer d.mu.RUnlock()
+		log.Zap.Infof("Connid: %s NumOfStream: %d", d.ConnID, len(d.streams))
+		for _, stream := range d.streams {
+			stream.OnDataTracksOpen()
+		}
 	case webrtc.ICEConnectionStateCompleted:
 	case webrtc.ICEConnectionStateDisconnected:
 	case webrtc.ICEConnectionStateFailed:

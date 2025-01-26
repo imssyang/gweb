@@ -1,5 +1,5 @@
 import unittest
-from formatify import dumps
+from format import dumps
 
 
 class PyfmtTestCase(unittest.TestCase):

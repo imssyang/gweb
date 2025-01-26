@@ -39,4 +39,4 @@ jobs:
 
     - name: Test with pytest
       run: |
-        PYTHONPATH=internal/api pytest tests/formatify
+        PYTHONPATH=internal/api pytest tests/format

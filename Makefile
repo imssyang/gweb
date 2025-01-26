@@ -1,20 +1,24 @@
 PROJECT_DIR=$(shell pwd)
 PYTHON_HOME=$(shell pyenv prefix)
 PYTHON_VER=$(shell ls ${PYTHON_HOME}/include)
+FFMPEG_HOME=/opt/ffmpeg
 OS_TYPE := $(shell uname)
 
 export CGO_CFLAGS = -Wall -Wextra -O2 \
 	-I${PYTHON_HOME}/include/${PYTHON_VER} \
+	-I${FFMPEG_HOME}/include \
 	-I${PROJECT_DIR}/third_party
 export CGO_CXXFLAGS = -std=c++20 \
 	-I${PYTHON_HOME}/include/${PYTHON_VER} \
+	-I${FFMPEG_HOME}/include \
 	-I${PROJECT_DIR}/third_party
 export CGO_LDFLAGS = -Wl,-no_warn_duplicate_libraries \
-	-L${PYTHON_HOME}/lib \
-	-l${PYTHON_VER}
+	-L${PYTHON_HOME}/lib -l${PYTHON_VER} \
+	-L${FFMPEG_HOME}/lib \
+	-lavcodec -lavformat -lavutil -lswscale -lswresample
 export PYTHONPATH=${PROJECT_DIR}/internal/api
 ifeq ($(OS_TYPE), Linux)
-	export LD_LIBRARY_PATH=${PYTHON_HOME}/lib
+	export LD_LIBRARY_PATH=${PYTHON_HOME}/lib:${FFMPEG_HOME}/lib
 endif
 
 TARGET = gweb
@@ -25,9 +29,9 @@ $(TARGET): formatui mediaui
 	python -m compileall -b internal/api/format
 	rsync -av --include="*/" --include="*.pyc" --exclude="*" \
 		internal/api/format deploy
-	go build -v -o deploy/gweb cmd/gweb.go
+	go build -v -o deploy/$@ cmd/gweb.go
 ifeq ($(OS_TYPE), Linux)
-	patchelf --set-rpath '$$ORIGIN' deploy/gweb
+	patchelf --set-rpath '$$ORIGIN' deploy/$@
 	cp -v ${PYTHON_HOME}/lib/lib${PYTHON_VER}.so.1.0 deploy
 endif
 

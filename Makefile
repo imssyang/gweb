@@ -16,7 +16,7 @@ export CGO_LDFLAGS = -Wl,-no_warn_duplicate_libraries \
 	-L${PYTHON_HOME}/lib -l${PYTHON_VER} \
 	-L${FFMPEG_HOME}/lib \
 	-lavcodec -lavformat -lavutil -lswscale -lswresample
-export PYTHONPATH=${PROJECT_DIR}/internal/api
+export PYTHONPATH=${PROJECT_DIR}/pkg
 ifeq ($(OS_TYPE), Linux)
 	export LD_LIBRARY_PATH=${PYTHON_HOME}/lib:${FFMPEG_HOME}/lib
 endif
@@ -26,9 +26,9 @@ TARGET = gweb
 all: $(TARGET)
 
 $(TARGET): formatui mediaui
-	python -m compileall -b internal/api/format
+	python -m compileall -b pkg/format
 	rsync -av --include="*/" --include="*.pyc" --exclude="*" \
-		internal/api/format deploy
+		pkg/format deploy
 	go build -v -o deploy/$@ cmd/gweb.go
 ifeq ($(OS_TYPE), Linux)
 	patchelf --set-rpath '$$ORIGIN' deploy/$@

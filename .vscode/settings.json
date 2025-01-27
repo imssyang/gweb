@@ -67,9 +67,7 @@
     "go.goroot": "/opt/go/goenv/versions/1.23.5",
     "go.gopath": "/opt/go/gopath/1.23.5",
     "go.toolsEnvVars": {
-        "CGO_ENABLED": "1",
-        "CGO_CFLAGS": "-I/opt/app/gweb/internal/api/format /opt/app/gweb/third_party -I/opt/python/pyenv/versions/3.10.13/include/python3.10",
-        "CGO_LDFLAGS": "-L/usr/local/lib"
+        "CGO_ENABLED": "1"
     },
     "python.analysis.extraPaths": [
         "/opt/python/pyenv/versions/3.10.13/lib/python3.10/site-packages"

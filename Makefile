@@ -8,7 +8,7 @@ export CGO_CFLAGS = -Wall -Wextra -O2 \
 	-I${PYTHON_HOME}/include/${PYTHON_VER} \
 	-I${FFMPEG_HOME}/include \
 	-I${PROJECT_DIR}/third_party
-export CGO_CXXFLAGS = -std=c++20 \
+export CGO_CXXFLAGS = -std=c++20 -O2 \
 	-I${PYTHON_HOME}/include/${PYTHON_VER} \
 	-I${FFMPEG_HOME}/include \
 	-I${PROJECT_DIR}/third_party

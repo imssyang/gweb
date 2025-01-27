@@ -3,17 +3,17 @@
         {
             "name": "MacOS",
             "includePath": [
+                "${workspaceFolder}/internal/api/format",
                 "${workspaceFolder}/third_party",
                 "/opt/python/pyenv/versions/3.10.13/include/python3.10",
-                "/opt/ffmpeg/include",
-                "/opt/app/gweb/internal/api/format"
+                "/opt/ffmpeg/include"
             ],
             "defines": [
                 "__APPLE__"
             ],
             "compilerPath": "/usr/bin/clang++",
             "cStandard": "c17",
-            "cppStandard": "c++17",
+            "cppStandard": "c++20",
             "intelliSenseMode": "macos-clang-x64",
             "macFrameworkPath": [
                 "/System/Library/Frameworks",
@@ -23,17 +23,17 @@
         {
             "name": "Linux",
             "includePath": [
+                "${workspaceFolder}/internal/api/format",
                 "${workspaceFolder}/third_party",
                 "/opt/python/pyenv/versions/3.10.13/include/python3.10",
-                "/opt/ffmpeg/include",
-                "/opt/app/gweb/internal/api/format"
+                "/opt/ffmpeg/include"
             ],
             "defines": [
                 "__LINUX__"
             ],
             "compilerPath": "/usr/bin/g++",
             "cStandard": "c17",
-            "cppStandard": "c++17",
+            "cppStandard": "c++20",
             "intelliSenseMode": "linux-gcc-x64",
             "configurationProvider": "ms-vscode.makefile-tools"
         }

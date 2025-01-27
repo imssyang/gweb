@@ -73,8 +73,8 @@ test: env
 	python -m unittest -v tests/format/test_pyfmt.py
 
 clean: clean-formatui clean-mediaui
-	find internal -name "*.pyc" -type f -delete
-	find internal -type d -name "__pycache__" -exec rm -r {} +
+	find pkg -name "*.pyc" -type f -delete
+	find pkg -type d -name "__pycache__" -exec rm -r {} +
 	find tests -type d -name "__pycache__" -exec rm -r {} +
 	rm -rf deploy/gweb \
 		deploy/libpython* \

@@ -25,15 +25,19 @@ TARGET = gweb
 
 all: $(TARGET)
 
-$(TARGET): formatui mediaui
-	python -m compileall -b pkg/format
+$(TARGET): build
+	mkdir -p deploy
+	cp -v $@ deploy
 	rsync -av --include="*/" --include="*.pyc" --exclude="*" \
 		pkg/format deploy
-	go build -v -o deploy/$@ cmd/gweb.go
 ifeq ($(OS_TYPE), Linux)
 	patchelf --set-rpath '$$ORIGIN' deploy/$@
 	cp -v ${PYTHON_HOME}/lib/lib${PYTHON_VER}.so.1.0 deploy
 endif
+
+build: formatui mediaui
+	python -m compileall -b pkg/format
+	go build -v -o $(TARGET) cmd/$(TARGET).go
 
 env:
 	@echo OS_TYPE=$(OS_TYPE)
@@ -68,19 +72,20 @@ run:
 	go run cmd/gweb.go -p 5015 --debug
 
 test: env
-	python -m unittest -v tests/format/test_pytext.py
-	python -m unittest -v tests/format/test_pycmd.py
-	python -m unittest -v tests/format/test_pyfmt.py
+	pushd tests/format && \
+	python -m unittest -v test_pytext.py && \
+	python -m unittest -v test_pycmd.py && \
+	python -m unittest -v test_pyfmt.py && \
+	popd
 
-clean: clean-formatui clean-mediaui
+clean: delformatui delmediaui
 	find pkg -name "*.pyc" -type f -delete
 	find pkg -type d -name "__pycache__" -exec rm -r {} +
 	find tests -type d -name "__pycache__" -exec rm -r {} +
-	rm -rf deploy/gweb \
-		deploy/libpython* \
-		deploy/format
+	find deploy -name "gweb.yaml" -prune -o -exec rm -rf {} +
+	rm -rf $(TARGET)
 
-clean-formatui:
+delformatui:
 	rm -rf public/img/format.svg \
 		public/js/format.min.js \
 		public/css/format.min.css \
@@ -89,7 +94,7 @@ clean-formatui:
 		public/plugins/json5@* \
 		public/plugins/w2ui@*
 
-clean-mediaui:
+delmediaui:
 	rm -rf public/img/media.svg \
 		public/js/media.min.js \
 		public/css/media.min.css

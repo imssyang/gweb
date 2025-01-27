@@ -1,7 +1,7 @@
 **/*.pyc
 **/*/__pycache__/
 **/*/node_modules/
-gweb
+cmd/gweb
 deploy/*
 !deploy/gweb.yaml
 public/css/*

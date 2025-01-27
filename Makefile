@@ -27,7 +27,7 @@ all: $(TARGET)
 
 $(TARGET): build
 	mkdir -p deploy
-	cp -v $@ deploy
+	go build -v -o deploy/$(TARGET) cmd/gweb.go
 	rsync -av --include="*/" --include="*.pyc" --exclude="*" \
 		pkg/format deploy
 ifeq ($(OS_TYPE), Linux)
@@ -37,7 +37,6 @@ endif
 
 build: formatui mediaui
 	python -m compileall -b pkg/format
-	go build -v -o $(TARGET) cmd/$(TARGET).go
 
 env:
 	@echo OS_TYPE=$(OS_TYPE)
@@ -82,8 +81,7 @@ clean: delformatui delmediaui
 	find pkg -name "*.pyc" -type f -delete
 	find pkg -type d -name "__pycache__" -exec rm -r {} +
 	find tests -type d -name "__pycache__" -exec rm -r {} +
-	find deploy -name "gweb.yaml" -prune -o -exec rm -rf {} +
-	rm -rf $(TARGET)
+	find deploy/* -name "gweb.yaml" -prune -o -exec rm -rf {} +
 
 delformatui:
 	rm -rf public/img/format.svg \

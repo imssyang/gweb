@@ -3,7 +3,6 @@
         {
             "name": "MacOS",
             "includePath": [
-                "${workspaceFolder}/internal/api/format",
                 "${workspaceFolder}/third_party",
                 "/opt/python/pyenv/versions/3.10.13/include/python3.10",
                 "/opt/ffmpeg/include"
@@ -23,7 +22,6 @@
         {
             "name": "Linux",
             "includePath": [
-                "${workspaceFolder}/internal/api/format",
                 "${workspaceFolder}/third_party",
                 "/opt/python/pyenv/versions/3.10.13/include/python3.10",
                 "/opt/ffmpeg/include"

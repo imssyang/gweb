@@ -37,6 +37,7 @@ endif
 
 build: formatui mediaui
 	python -m compileall -b pkg/format
+	go build -x -v cmd/gweb.go
 
 env:
 	@echo OS_TYPE=$(OS_TYPE)
@@ -57,18 +58,22 @@ init: env
 	mkdir -p public/img public/js public/css
 
 formatui: init
-	cp third_party/formatui/src/img/formatui.svg public/img/format.svg
+	cp third_party/formatui/dist/img/formatui.svg public/img/format.svg
 	cp third_party/formatui/dist/index.min.js public/js/format.min.js
 	cp third_party/formatui/dist/index.min.css public/css/format.min.css
 	cp -r third_party/formatui/dist/plugins/* public/plugins
 
 mediaui: init
-	cp third_party/mediaui/src/img/mediaui.svg public/img/media.svg
+	cp third_party/mediaui/dist/img/mediaui.svg public/img/media.svg
 	cp third_party/mediaui/dist/index.min.js public/js/media.min.js
 	cp third_party/mediaui/dist/index.min.css public/css/media.min.css
 
 run:
 	go run cmd/gweb.go -p 5015 --debug
+
+tool: env
+	go tool cgo -debug-gcc pkg/format/format.go
+	#go tool cgo pkg/media/media.go
 
 test: env
 	pushd tests/format && \

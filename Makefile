@@ -64,9 +64,9 @@ formatui: init
 	cp -r third_party/formatui/dist/plugins/* public/plugins
 
 mediaui: init
-	cp third_party/mediaui/dist/img/mediaui.svg public/img/media.svg
-	cp third_party/mediaui/dist/index.min.js public/js/media.min.js
-	cp third_party/mediaui/dist/index.min.css public/css/media.min.css
+	cp third_party/mediaui/dist/mediaui.svg public/img/mediaui.svg
+	cp third_party/mediaui/dist/mediaui.js public/js/mediaui.js
+	cp third_party/mediaui/dist/mediaui.css public/css/mediaui.css
 
 run:
 	go run cmd/gweb.go -p 5015 --debug
@@ -98,8 +98,8 @@ delformatui:
 		public/plugins/w2ui@*
 
 delmediaui:
-	rm -rf public/img/media.svg \
-		public/js/media.min.js \
-		public/css/media.min.css
+	rm -rf public/img/mediaui.svg \
+		public/js/mediaui.js \
+		public/css/mediaui.css
 
 .PYONY: all env init formatui mediaui run test clean

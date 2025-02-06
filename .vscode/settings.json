@@ -1,4 +1,10 @@
 {
+    "css.validate": false,
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+        "source.fixAll.eslint": "explicit"
+    },
+    "eslint.validate": ["typescript", "javascript", "javascriptreact", "typescriptreact"],
     "files.associations": {
         "iostream": "cpp",
         "array": "cpp",
@@ -92,10 +98,6 @@
     "python.autoComplete.extraPaths": [
         "/opt/python/pyenv/versions/3.10.13/lib/python3.10/site-packages"
     ],
-    "typescript.tsdk": "node_modules/typescript/lib",
-    "editor.formatOnSave": true,
-    "editor.codeActionsOnSave": {
-        "source.fixAll.eslint": "explicit"
-    },
-    "eslint.validate": ["typescript", "javascript", "javascriptreact", "typescriptreact"]
+    "tailwindCSS.validate": true,
+    "typescript.tsdk": "node_modules/typescript/lib"
 }

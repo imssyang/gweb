@@ -8,3 +8,4 @@ public/js/*
 public/img/*
 !public/img/favicon.svg
 public/plugins/
+tests/play-from-disk/

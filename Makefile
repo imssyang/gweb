@@ -4,22 +4,27 @@ PYTHON_VER=$(shell ls ${PYTHON_HOME}/include)
 FFMPEG_HOME=/opt/ffmpeg
 OS_TYPE := $(shell uname)
 
+ifeq ($(OS_TYPE), Linux)
+	CXXFLAGS = -std=c++2a
+	export LD_LIBRARY_PATH=${PYTHON_HOME}/lib:${FFMPEG_HOME}/lib
+else ifeq ($(OS_TYPE), Darwin)
+	CXXFLAGS = -std=c++20
+	LDFLAGS=-Wl,-no_warn_duplicate_libraries
+endif
+
 export CGO_CFLAGS = -Wall -Wextra -O2 \
 	-I${PYTHON_HOME}/include/${PYTHON_VER} \
 	-I${FFMPEG_HOME}/include \
 	-I${PROJECT_DIR}/third_party
-export CGO_CXXFLAGS = -std=c++20 -O2 \
+export CGO_CXXFLAGS = ${CXXFLAGS} -O2 \
 	-I${PYTHON_HOME}/include/${PYTHON_VER} \
 	-I${FFMPEG_HOME}/include \
 	-I${PROJECT_DIR}/third_party
-export CGO_LDFLAGS = -Wl,-no_warn_duplicate_libraries \
+export CGO_LDFLAGS = ${LDFLAGS} \
 	-L${PYTHON_HOME}/lib -l${PYTHON_VER} \
 	-L${FFMPEG_HOME}/lib \
 	-lavcodec -lavformat -lavutil -lswscale -lswresample
 export PYTHONPATH=${PROJECT_DIR}/pkg
-ifeq ($(OS_TYPE), Linux)
-	export LD_LIBRARY_PATH=${PYTHON_HOME}/lib:${FFMPEG_HOME}/lib
-endif
 
 TARGET = gweb
 

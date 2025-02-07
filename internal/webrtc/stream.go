@@ -3,6 +3,7 @@ package webrtc
 import (
 	"fmt"
 	"sync"
+	"time"
 
 	"github.com/imssyang/gweb/internal/log"
 	"github.com/imssyang/gweb/internal/media"
@@ -11,33 +12,28 @@ import (
 
 type StreamData struct {
 	mu       sync.RWMutex
-	URL      string
-	Media    *media.Media
+	URI      string
+	Media    *media.Format
 	ConnData *ConnectionData
-	tracks   map[TrackID]*TrackData
+	tracks   map[string]*TrackData
 }
 
-func NewStreamData(uRL string, connData *ConnectionData) (*StreamData, error) {
-	m, err := media.NewMedia(uRL)
+func NewStreamData(uri string, connData *ConnectionData) (*StreamData, error) {
+	demuxer, err := connData.Media.AddDemuxer(uri)
 	if err != nil {
 		return nil, err
 	}
 
 	d := &StreamData{
-		URL:      uRL,
-		Media:    m,
+		URI:      uri,
+		Media:    demuxer,
 		ConnData: connData,
-		tracks:   make(map[TrackID]*TrackData),
+		tracks:   make(map[string]*TrackData),
 	}
 
-	for i, parser := range m.Parsers {
-		trackID := TrackID{
-			ID:       fmt.Sprint(i),
-			StreamID: uRL,
-			MimeType: parser.MimeType(),
-		}
-
-		_, err := d.AddTrack(trackID, parser)
+	for streamIndex, stream := range d.Media.Streams {
+		trackID := NewTrackParam(uri, streamIndex, stream.Codec.MimeType())
+		_, err := d.AddTrack(trackID, stream)
 		if err != nil {
 			return nil, err
 		}
@@ -49,44 +45,83 @@ func NewStreamData(uRL string, connData *ConnectionData) (*StreamData, error) {
 func (d *StreamData) OnDataTracksOpen() {
 	d.mu.RLock()
 	defer d.mu.RUnlock()
-	log.Zap.Infof("URL: %s NumOfTrack: %d", d.URL, len(d.tracks))
+	log.Zap.Infof("URI: %s NumOfTrack: %d", d.URI, len(d.tracks))
+
+	go func() {
+		var startDts *time.Duration
+		startPoint := time.Now()
+		for {
+			packet, err := d.Media.ReadPacket()
+			if err != nil {
+				log.Zap.Warnf("URI: %s read packet fail", d.URI)
+				break
+			}
+
+			for {
+				dts := packet.DtsT()
+				if startDts == nil {
+					startDts = &dts
+					break
+				}
+
+				duration := packet.DurationT()
+				elapsedDts := dts - *startDts
+				elapsedT := time.Since(startPoint)
+				if elapsedT+duration > elapsedDts {
+					break
+				}
+
+				time.Sleep(duration / 5)
+			}
+
+			trackData := d.GetTrack(fmt.Sprint(packet.StreamIndex))
+			err = trackData.OnPacketWrite(packet)
+			if err != nil {
+				log.Zap.Warnf("URI: %s write packet fail", d.URI)
+				break
+			}
+		}
+	}()
+
 	for _, track := range d.tracks {
 		go func(t *TrackData) {
-			t.OnPacketRead()
-		}(track)
-		go func(t *TrackData) {
-			t.OnPacketWrite()
+			for {
+				_, err := t.OnRtcpRead()
+				if err != nil {
+					break
+				}
+			}
 		}(track)
 	}
 }
 
-func (d *StreamData) AddTrack(trackID TrackID, trackParser media.TrackParser) (*TrackData, error) {
-	trackLocal, err := webrtc.NewTrackLocalStaticSample(
-		webrtc.RTPCodecCapability{MimeType: trackID.MimeType},
-		trackID.ID,
-		trackID.StreamID)
+func (d *StreamData) AddTrack(param TrackParam, media *media.Stream) (*TrackData, error) {
+	localSample, err := webrtc.NewTrackLocalStaticSample(
+		webrtc.RTPCodecCapability{MimeType: param.MimeType},
+		param.ID,
+		param.URI)
 	if err != nil {
 		return nil, err
 	}
 
-	rtpSender, err := d.ConnData.Connection.AddTrack(trackLocal)
+	rtpSender, err := d.ConnData.Connection.AddTrack(localSample)
 	if err != nil {
 		return nil, err
 	}
 
-	trackData, err := NewTrackData(trackID, trackParser, trackLocal, rtpSender, d.ConnData)
+	trackData, err := NewTrackData(param, media, localSample, rtpSender, d.ConnData)
 	if err != nil {
 		return nil, err
 	}
 
 	d.mu.Lock()
-	d.tracks[trackID] = trackData
+	d.tracks[param.ID] = trackData
 	d.mu.Unlock()
 
 	return trackData, nil
 }
 
-func (d *StreamData) GetTrack(trackID TrackID) *TrackData {
+func (d *StreamData) GetTrack(trackID string) *TrackData {
 	d.mu.RLock()
 	defer d.mu.RUnlock()
 	td, exists := d.tracks[trackID]

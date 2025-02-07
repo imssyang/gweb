@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	"github.com/imssyang/gweb/internal/log"
+	"github.com/imssyang/gweb/internal/media"
 	"github.com/pion/webrtc/v4"
 )
 
@@ -15,6 +16,7 @@ type ConnectionData struct {
 	ConnID         ConnectionID
 	Connection     *webrtc.PeerConnection
 	Pool           *PoolData
+	Media          *media.Media
 	GatheringState webrtc.ICEGatheringState
 	candidates     []*webrtc.ICECandidate
 	channels       map[ChannelID]*ChannelData
@@ -27,10 +29,17 @@ func NewConnectionData(connID ConnectionID, connection *webrtc.PeerConnection, p
 	if connection == nil || pool == nil {
 		return nil, fmt.Errorf("%s invalid.", connID)
 	}
+
+	media, err := media.NewMedia()
+	if err != nil {
+		return nil, fmt.Errorf("%s create media fail.", connID)
+	}
+
 	connData := ConnectionData{
 		ConnID:         connID,
 		Connection:     connection,
 		Pool:           pool,
+		Media:          media,
 		GatheringState: webrtc.ICEGatheringStateNew,
 		candidates:     make([]*webrtc.ICECandidate, 0),
 		channels:       make(map[ChannelID]*ChannelData),

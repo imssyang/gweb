@@ -1,53 +1,43 @@
-.DEFAULT: env
-.PYONY: clean
-
-OS_TYPE := $(shell uname)
 PROJECT_DIR=$(shell pwd)
 PYTHON_HOME=$(shell pyenv prefix)
 PYTHON_VER=$(shell ls ${PYTHON_HOME}/include)
+FFMPEG_HOME=/opt/ffmpeg
+OS_TYPE := $(shell uname)
 
+export CGO_CFLAGS = -Wall -Wextra -O2 \
+	-I${PYTHON_HOME}/include/${PYTHON_VER} \
+	-I${FFMPEG_HOME}/include \
+	-I${PROJECT_DIR}/third_party
+export CGO_CXXFLAGS = -std=c++20 -O2 \
+	-I${PYTHON_HOME}/include/${PYTHON_VER} \
+	-I${FFMPEG_HOME}/include \
+	-I${PROJECT_DIR}/third_party
+export CGO_LDFLAGS = -Wl,-no_warn_duplicate_libraries \
+	-L${PYTHON_HOME}/lib -l${PYTHON_VER} \
+	-L${FFMPEG_HOME}/lib \
+	-lavcodec -lavformat -lavutil -lswscale -lswresample
+export PYTHONPATH=${PROJECT_DIR}/pkg
 ifeq ($(OS_TYPE), Linux)
-	export LD_LIBRARY_PATH=${PYTHON_HOME}/lib
-else ifeq ($(OS_TYPE), Darwin)
-	export BASE_LDFLAGS=-Wl,-no_warn_duplicate_libraries
+	export LD_LIBRARY_PATH=${PYTHON_HOME}/lib:${FFMPEG_HOME}/lib
 endif
 
-export CGO_CFLAGS=\
-	-I${PYTHON_HOME}/include/${PYTHON_VER}
-export CGO_CXXFLAGS=\
-	-I${PYTHON_HOME}/include/${PYTHON_VER} \
-	-I${PROJECT_DIR}/third_party
-export CGO_LDFLAGS=${BASE_LDFLAGS} \
-	-L${PYTHON_HOME}/lib \
-	-l${PYTHON_VER}
-export PYTHONPATH=${PROJECT_DIR}/internal/api
+TARGET = gweb
 
-formatui-deploy:
-	mkdir -p public/img public/js public/css
-	cp third_party/formatui/src/img/formatui.svg public/img/formatify.svg
-	cp third_party/formatui/dist/index.min.js public/js/formatify.min.js
-	cp third_party/formatui/dist/index.min.css public/css/formatify.min.css
-	cp -r third_party/formatui/dist/plugins/* public/plugins
+all: $(TARGET)
 
-formatui-clean:
-	rm -rf public/img/formatify.svg \
-		public/js/formatify.min.js \
-		public/css/formatify.min.css \
-		public/plugins/bootstrap-icons@* \
-		public/plugins/clipboard@* \
-		public/plugins/json5@* \
-		public/plugins/w2ui@*
+$(TARGET): build
+	mkdir -p deploy
+	go build -v -o deploy/$(TARGET) cmd/gweb.go
+	rsync -av --include="*/" --include="*.pyc" --exclude="*" \
+		pkg/format deploy
+ifeq ($(OS_TYPE), Linux)
+	patchelf --set-rpath '$$ORIGIN' deploy/$@
+	cp -v ${PYTHON_HOME}/lib/lib${PYTHON_VER}.so.1.0 deploy
+endif
 
-mediaui-deploy:
-	mkdir -p public/img public/js public/css
-	cp third_party/mediaui/src/img/mediaui.svg public/img/media.svg
-	cp third_party/mediaui/dist/index.min.js public/js/media.min.js
-	cp third_party/mediaui/dist/index.min.css public/css/media.min.css
-
-mediaui-clean:
-	rm -rf public/img/media.svg \
-		public/js/media.min.js \
-		public/css/media.min.css
+build: formatui mediaui
+	python -m compileall -b pkg/format
+	go build -x -v cmd/gweb.go
 
 env:
 	@echo OS_TYPE=$(OS_TYPE)
@@ -64,28 +54,52 @@ else ifeq ($(OS_TYPE), Darwin)
 	@echo DYLD_LIBRARY_PATH=$(DYLD_LIBRARY_PATH)
 endif
 
+init: env
+	mkdir -p public/img public/js public/css
+
+formatui: init
+	cp third_party/formatui/dist/img/formatui.svg public/img/format.svg
+	cp third_party/formatui/dist/index.min.js public/js/format.min.js
+	cp third_party/formatui/dist/index.min.css public/css/format.min.css
+	cp -r third_party/formatui/dist/plugins/* public/plugins
+
+mediaui: init
+	cp third_party/mediaui/dist/mediaui.svg public/img/mediaui.svg
+	cp third_party/mediaui/dist/mediaui.js public/js/mediaui.js
+	cp third_party/mediaui/dist/mediaui.css public/css/mediaui.css
+
 run:
 	go run cmd/gweb.go -p 5015 --debug
 
-deploy: env formatui-deploy
-	python -m compileall -b internal/api/formatify
-	rsync -av --include="*/" --include="*.pyc" --exclude="*" \
-		internal/api/formatify deploy
-	go build -v -o deploy/gweb cmd/gweb.go
-ifeq ($(OS_TYPE), Linux)
-	patchelf --set-rpath '$$ORIGIN' deploy/gweb
-	cp -v ${PYTHON_HOME}/lib/lib${PYTHON_VER}.so.1.0 deploy
-endif
+tool: env
+	go tool cgo -debug-gcc pkg/format/format.go
+	#go tool cgo pkg/media/media.go
 
-test:
-	python -m unittest -v tests/formatify/test_pytext.py
-	python -m unittest -v tests/formatify/test_pycmd.py
-	python -m unittest -v tests/formatify/test_pyfmt.py
+test: env
+	pushd tests/format && \
+	python -m unittest -v test_pytext.py && \
+	python -m unittest -v test_pycmd.py && \
+	python -m unittest -v test_pyfmt.py && \
+	popd
 
-clean: formatui-clean mediaui-clean
-	find internal -name "*.pyc" -type f -delete
-	find internal -type d -name "__pycache__" -exec rm -r {} +
+clean: delformatui delmediaui
+	find pkg -name "*.pyc" -type f -delete
+	find pkg -type d -name "__pycache__" -exec rm -r {} +
 	find tests -type d -name "__pycache__" -exec rm -r {} +
-	rm -rf deploy/gweb \
-		deploy/libpython* \
-		deploy/formatify
+	find deploy/* -name "gweb.yaml" -prune -o -exec rm -rf {} +
+
+delformatui:
+	rm -rf public/img/format.svg \
+		public/js/format.min.js \
+		public/css/format.min.css \
+		public/plugins/bootstrap-icons@* \
+		public/plugins/clipboard@* \
+		public/plugins/json5@* \
+		public/plugins/w2ui@*
+
+delmediaui:
+	rm -rf public/img/mediaui.svg \
+		public/js/mediaui.js \
+		public/css/mediaui.css
+
+.PYONY: all env init formatui mediaui run test clean

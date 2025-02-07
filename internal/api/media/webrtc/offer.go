@@ -123,7 +123,7 @@ func (m *RTCOfferMSG) connection(c *gin.Context) (*webrtc_.ConnectionData, error
 
 func (m *RTCOfferMSG) Offer(c *gin.Context) {
 	if len(m.REQ.StreamURLs) == 0 {
-		m.RSP.Err = fmt.Sprintf("No any URLs")
+		m.RSP.Err = fmt.Sprintf("%v no any URLs", m.REQ.ConnID)
 		c.JSON(http.StatusBadRequest, m.RSP)
 		return
 	}

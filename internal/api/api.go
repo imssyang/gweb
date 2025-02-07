@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/imssyang/gweb/internal/api/formatify"
+	"github.com/imssyang/gweb/internal/api/format"
 	"github.com/imssyang/gweb/internal/api/media"
 )
 
@@ -16,7 +16,7 @@ func Register(engine *gin.Engine) {
 	router.detect()
 	router.index()
 	router.health()
-	formatify.Register(engine)
+	format.Register(engine)
 	media.Register(engine)
 }
 
@@ -32,7 +32,7 @@ func (r *Router) detect() {
 
 func (r *Router) index() {
 	r.GET("/", func(c *gin.Context) {
-		c.Redirect(http.StatusMovedPermanently, "/formatify")
+		c.Redirect(http.StatusMovedPermanently, "/format")
 	})
 }
 

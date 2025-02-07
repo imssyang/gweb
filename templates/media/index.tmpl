@@ -7,17 +7,16 @@
   <link rel="stylesheet" href="{{ .style }}">
 </head>
 <body>
+  <div id="root"></div>
   <script type="module">
-    import { InitUI } from {{ .main }}
-    InitUI({
+    import MediaUI from {{ .main }}
+    MediaUI({
       webrtc: {
         urlGroup: {{ .urlGroup }},
         iceServerURLs: {{ .iceServerURLs | ToJS }},
       }
     })
   </script>
-  <div id="videos"></div>
-  <div id="logs"></div>
 </body>
 </html>
 {{ end }}

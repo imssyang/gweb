@@ -1,4 +1,10 @@
 {
+    "css.validate": false,
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+        "source.fixAll.eslint": "explicit"
+    },
+    "eslint.validate": ["typescript", "javascript", "javascriptreact", "typescriptreact"],
     "files.associations": {
         "iostream": "cpp",
         "array": "cpp",
@@ -61,10 +67,37 @@
         "typeindex": "cpp",
         "typeinfo": "cpp",
         "valarray": "cpp",
-        "variant": "cpp"
+        "variant": "cpp",
+        "__bit_reference": "cpp",
+        "__hash_table": "cpp",
+        "__locale": "cpp",
+        "__node_handle": "cpp",
+        "__split_buffer": "cpp",
+        "__threading_support": "cpp",
+        "__tree": "cpp",
+        "__verbose_abort": "cpp",
+        "bitset": "cpp",
+        "charconv": "cpp",
+        "execution": "cpp",
+        "iomanip": "cpp",
+        "ios": "cpp",
+        "locale": "cpp",
+        "print": "cpp",
+        "queue": "cpp",
+        "stack": "cpp"
     },
-    "go.gopath": "/opt/go/gomod/1.20.13",
-    "go.goroot": "/opt/go/goenv/versions/1.20.13",
-    "http.proxySupport": "on",
-    "http.proxy": "http://127.0.0.1:7890",
+    "git.ignoreLimitWarning": true,
+    "go.goroot": "/opt/go/goenv/versions/1.23.5",
+    "go.gopath": "/opt/go/gopath/1.23.5",
+    "go.toolsEnvVars": {
+        "CGO_ENABLED": "1"
+    },
+    "python.analysis.extraPaths": [
+        "/opt/python/pyenv/versions/3.10.13/lib/python3.10/site-packages"
+    ],
+    "python.autoComplete.extraPaths": [
+        "/opt/python/pyenv/versions/3.10.13/lib/python3.10/site-packages"
+    ],
+    "tailwindCSS.validate": true,
+    "typescript.tsdk": "node_modules/typescript/lib"
 }

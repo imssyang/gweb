@@ -2,69 +2,41 @@ package media
 
 import (
 	"fmt"
-	"net/url"
-	"path/filepath"
-	"strings"
 
-	"github.com/imssyang/gweb/internal/log"
-	"github.com/imssyang/gweb/internal/media/ivf"
-	"github.com/imssyang/gweb/internal/media/ogg"
+	"github.com/imssyang/gweb/pkg/ffmpeg"
 )
-
-const (
-	MuxTypeIVF = "ivf"
-	MuxTypeOGG = "ogg"
-)
-
-type TrackParser interface {
-	MimeType() string
-	NextFrame() ([]byte, any, error)
-}
 
 type Media struct {
-	URL     string
-	MuxType string
-	Parsers []TrackParser
+	ID   uint32
+	URIs map[string]*Format
 }
 
-func NewMedia(uRL string) (*Media, error) {
-	m := &Media{
-		URL: uRL,
+func NewMedia() (*Media, error) {
+	mediaID := ffmpeg.NewMedia()
+	if mediaID == 0 {
+		return nil, fmt.Errorf("ffmpeg.NewMedia failed")
 	}
 
-	parsedURL, err := url.Parse(uRL)
+	return &Media{
+		ID:   mediaID,
+		URIs: make(map[string]*Format),
+	}, nil
+}
+
+func (m *Media) AddDemuxer(uri string) (*Format, error) {
+	ffFormat, err := ffmpeg.NewDemuxer(m.ID, uri)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("ffmpeg.AddDemuxer(%v) failed", uri)
 	}
 
-	if len(parsedURL.Scheme) == 0 || parsedURL.Scheme == "file" {
-		path := parsedURL.Path
-		if len(parsedURL.Host) > 0 {
-			path = filepath.Join(string(filepath.Separator), parsedURL.Host, path)
-		}
+	return newFormatByFFmpeg(ffFormat), nil
+}
 
-		switch strings.ToLower(filepath.Ext(path)) {
-		case ".ivf":
-			ivf, err := ivf.NewIVFParser(uRL)
-			if err != nil {
-				return nil, err
-			}
-
-			m.MuxType = MuxTypeIVF
-			m.Parsers = append(m.Parsers, *ivf)
-		case ".ogg":
-			ogg, err := ogg.NewOggParser(uRL)
-			if err != nil {
-				return nil, err
-			}
-
-			m.MuxType = MuxTypeOGG
-			m.Parsers = append(m.Parsers, *ogg)
-		default:
-			log.Zap.Errorln("UnsupportFileExt:", uRL)
-			return nil, fmt.Errorf("InvalidExt: %s", uRL)
-		}
+func (m *Media) AddMuxer(uri, muxFmt string) (*Format, error) {
+	ffFormat, err := ffmpeg.NewMuxer(m.ID, uri, muxFmt)
+	if err != nil {
+		return nil, fmt.Errorf("ffmpeg.AddMuxer(%v) failed", uri)
 	}
 
-	return m, nil
+	return newFormatByFFmpeg(ffFormat), nil
 }

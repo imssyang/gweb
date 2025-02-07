@@ -1,0 +1,84 @@
+package format
+
+import (
+	"fmt"
+	"io"
+	"net/http"
+	"strconv"
+
+	"github.com/gin-gonic/gin"
+	"github.com/imssyang/gweb/pkg/format"
+)
+
+func Register(engine *gin.Engine) {
+	router := NewRouter(engine, "format")
+	router.index()
+	router.mode()
+}
+
+type Router struct {
+	Name string
+	*gin.Engine
+	*gin.RouterGroup
+}
+
+func NewRouter(engine *gin.Engine, name string) *Router {
+	return &Router{
+		Name:        name,
+		Engine:      engine,
+		RouterGroup: engine.Group(name),
+	}
+}
+
+func (r *Router) index() {
+	r.Engine.GET("/"+r.Name, func(c *gin.Context) {
+		c.HTML(http.StatusOK, r.Name+"/index", gin.H{
+			"title":  "Format",
+			"icon":   "img/format.svg",
+			"style":  "css/format.min.css",
+			"main":   "/js/format.min.js",
+			"prefix": "/format",
+		})
+	})
+}
+
+func (r *Router) mode() {
+	r.Engine.POST("/"+r.Name+"/:mode/:action", func(c *gin.Context) {
+		escapeValue := c.DefaultQuery("escape", "false")
+		hasEscape, err := strconv.ParseBool(escapeValue)
+		if err != nil {
+			hasEscape = false
+		}
+
+		body, err := io.ReadAll(c.Request.Body)
+		if err != nil {
+			c.String(http.StatusInternalServerError, "Internal Server Error")
+			return
+		}
+
+		mode := c.Param("mode")
+		switch mode {
+		case "json", "python", "command":
+			action := c.Param("action")
+			indent := 0
+			if action == "contract" {
+				indent = 0
+			} else if action == "expand" {
+				indent = map[string]int{
+					"json":    4,
+					"python":  1,
+					"command": 2,
+				}[mode]
+			}
+
+			formatted, err := format.PyDumps(mode, string(body), indent, hasEscape)
+			if err != nil {
+				c.String(http.StatusBadRequest, "PyDumps error %v", err)
+				return
+			}
+			c.String(http.StatusOK, formatted)
+		default:
+			fmt.Printf("Unsupport %v mode!\n", mode)
+		}
+	})
+}

@@ -32,9 +32,9 @@ func (r *Router) index() {
 	r.Engine.GET("/"+r.Name, func(c *gin.Context) {
 		c.HTML(http.StatusOK, r.Name+"/index", gin.H{
 			"title":         "Media",
-			"icon":          "img/media.svg",
-			"style":         "css/media.min.css",
-			"main":          "/js/media.min.js",
+			"icon":          "img/mediaui.svg",
+			"style":         "css/mediaui.css",
+			"main":          "/js/mediaui.js",
 			"urlGroup":      r.Name,
 			"iceServerURLs": conf.App.WebRTC.ICEServers,
 		})

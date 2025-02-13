@@ -4,6 +4,3 @@
 [submodule "third_party/mediaui"]
 	path = third_party/mediaui
 	url = https://github.com/imssyang/mediaui.git
-[submodule "third_party/webui"]
-	path = third_party/webui
-	url = https://github.com/imssyang/webui.git

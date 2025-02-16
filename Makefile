@@ -23,7 +23,7 @@ export CGO_CXXFLAGS = ${CXXFLAGS} -O2 \
 export CGO_LDFLAGS = ${LDFLAGS} \
 	-L${PYTHON_HOME}/lib -l${PYTHON_VER} \
 	-L${FFMPEG_HOME}/lib \
-	-lavcodec -lavformat -lavutil -lswscale -lswresample
+	-lmedia -lavcodec -lavformat -lavutil -lswscale -lswresample
 export PYTHONPATH=${PROJECT_DIR}/pkg
 
 TARGET = gweb
@@ -38,11 +38,16 @@ $(TARGET): build
 ifeq ($(OS_TYPE), Linux)
 	patchelf --set-rpath '$$ORIGIN' deploy/$@
 	cp -v ${PYTHON_HOME}/lib/lib${PYTHON_VER}.so.1.0 deploy
+else ifeq ($(OS_TYPE), Darwin)
+	install_name_tool -add_rpath ${FFMPEG_HOME}/lib/ deploy/$(TARGET)
 endif
 
-build: formatui mediaui
+build: ffmpeg formatui mediaui
 	python -m compileall -b pkg/format
-	go build -x -v cmd/gweb.go
+	go build -x -v -o $(TARGET) cmd/gweb.go
+ifeq ($(OS_TYPE), Darwin)
+	install_name_tool -add_rpath ${FFMPEG_HOME}/lib/ $(TARGET)
+endif
 
 env:
 	@echo OS_TYPE=$(OS_TYPE)
@@ -61,6 +66,10 @@ endif
 
 init: env
 	mkdir -p public/img public/js public/css
+
+ffmpeg:
+	mkdir -p pkg/ffmpeg/libmedia
+	cp third_party/ffmpeg/src/libmedia/*.h pkg/ffmpeg/libmedia
 
 formatui: init
 	cp third_party/formatui/dist/img/formatui.svg public/img/format.svg
@@ -87,11 +96,15 @@ test: env
 	python -m unittest -v test_pyfmt.py && \
 	popd
 
-clean: delformatui delmediaui
+clean: delffmpeg delformatui delmediaui
 	find pkg -name "*.pyc" -type f -delete
 	find pkg -type d -name "__pycache__" -exec rm -r {} +
 	find tests -type d -name "__pycache__" -exec rm -r {} +
 	find deploy/* -name "gweb.yaml" -prune -o -exec rm -rf {} +
+	rm -rf gweb
+
+delffmpeg:
+	rm -rf pkg/ffmpeg/libmedia
 
 delformatui:
 	rm -rf public/img/format.svg \
@@ -107,4 +120,4 @@ delmediaui:
 		public/js/mediaui.js \
 		public/css/mediaui.css
 
-.PYONY: all env init formatui mediaui run test clean
+.PYONY: all env init ffmpeg formatui mediaui run test clean

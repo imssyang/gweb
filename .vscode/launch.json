@@ -12,7 +12,7 @@
                 "CGO_ENABLED": "1",
                 "CGO_CFLAGS": "-Wall -Wextra -O0 -g -I${workspaceFolder}/third_party -I/opt/python/pyenv/versions/3.10.13/include/python3.10 -I/opt/ffmpeg/include",
                 "CGO_CXXFLAGS": "-std=c++20 -O0 -g -I${workspaceFolder}/third_party -I/opt/python/pyenv/versions/3.10.13/include/python3.10 -I/opt/ffmpeg/include",
-                "CGO_LDFLAGS": "-Wl,-no_warn_duplicate_libraries -L/opt/python/pyenv/versions/3.10.13/lib -lpython3.10 -L/opt/ffmpeg/lib -lavcodec -lavformat -lavutil -lswscale -lswresample",
+                "CGO_LDFLAGS": "-Wl,-no_warn_duplicate_libraries -L/opt/python/pyenv/versions/3.10.13/lib -lpython3.10 -L/opt/ffmpeg/lib -lmedia -lavcodec -lavformat -lavutil -lswscale -lswresample",
                 "PYTHONPATH": "${workspaceFolder}/pkg"
             },
             "args": [
@@ -32,7 +32,7 @@
                 "CGO_ENABLED": "1",
                 "CGO_CFLAGS": "-Wall -Wextra -O0 -g -I${workspaceFolder}/third_party -I/opt/python/pyenv/versions/3.10.13/include/python3.10 -I/opt/ffmpeg/include",
                 "CGO_CXXFLAGS": "-std=c++2a -O0 -g -I${workspaceFolder}/third_party -I/opt/python/pyenv/versions/3.10.13/include/python3.10 -I/opt/ffmpeg/include",
-                "CGO_LDFLAGS": "-Wl,-no_warn_duplicate_libraries -L/opt/python/pyenv/versions/3.10.13/lib -lpython3.10 -L/opt/ffmpeg/lib -lavcodec -lavformat -lavutil -lswscale -lswresample",
+                "CGO_LDFLAGS": "-Wl,-no_warn_duplicate_libraries -L/opt/python/pyenv/versions/3.10.13/lib -lpython3.10 -L/opt/ffmpeg/lib -lmedia -lavcodec -lavformat -lavutil -lswscale -lswresample",
                 "PYTHONPATH": "${workspaceFolder}/pkg"
             },
             "args": [

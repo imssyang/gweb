@@ -9,6 +9,7 @@ func Register(engine *gin.Engine, name string) {
 	router.offer()
 	router.answer()
 	router.candidate()
+	router.close()
 }
 
 type Router struct {

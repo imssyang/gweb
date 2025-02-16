@@ -9,11 +9,9 @@ import (
 	"github.com/pion/webrtc/v4"
 )
 
-type ConnectionID string
-
 type ConnectionData struct {
 	mu             sync.RWMutex
-	ConnID         ConnectionID
+	ConnID         string
 	Connection     *webrtc.PeerConnection
 	Pool           *PoolData
 	Media          *media.Media
@@ -25,7 +23,7 @@ type ConnectionData struct {
 	onICECandidateHandler func(*webrtc.ICECandidate, webrtc.ICEGatheringState)
 }
 
-func NewConnectionData(connID ConnectionID, connection *webrtc.PeerConnection, pool *PoolData, handlers ...any) (*ConnectionData, error) {
+func NewConnectionData(connID string, connection *webrtc.PeerConnection, pool *PoolData, handlers ...any) (*ConnectionData, error) {
 	if connection == nil || pool == nil {
 		return nil, fmt.Errorf("%s invalid.", connID)
 	}

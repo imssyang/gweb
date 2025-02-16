@@ -67,12 +67,12 @@ func (d *TrackData) OnPacketWrite(packet *media_.Packet) error {
 		return err
 	}
 
-	log.Zap.Infof("OnPacketWrite %v:%v:%v:%v:%d:%+v",
-		d.Param.URI,
-		d.Param.ID,
-		d.Media.Codec.Type,
-		d.Media.Codec.Name,
-		len(packet.Data),
-		packet.DurationT())
+	//log.Zap.Infof("OnPacketWrite %v:%v:%v:%v:%d:%+v",
+	//	d.Param.URI,
+	//	d.Param.ID,
+	//	d.Media.Codec.Type,
+	//	d.Media.Codec.Name,
+	//	len(packet.Data),
+	//	packet.DurationT())
 	return nil
 }

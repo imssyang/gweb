@@ -85,7 +85,7 @@ func NewRTCOfferMSG(connID string) *RTCOfferMSG {
 }
 
 func (m *RTCOfferMSG) connection(c *gin.Context) (*webrtc_.ConnectionData, error) {
-	connID := webrtc_.ConnectionID(m.REQ.ConnID)
+	connID := m.REQ.ConnID
 	connData := webrtc_.Connection(connID)
 	if connData != nil {
 		m.RSP.Err = fmt.Sprintf("Repead connected: %v", connID)

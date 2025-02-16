@@ -55,7 +55,7 @@ func (i *Instance) GetPool(network NetworkType, bindPort bool) (*PoolData, error
 	return nil, fmt.Errorf("No valid pool for %s,%v", network, bindPort)
 }
 
-func (i *Instance) GetConnection(connID ConnectionID) *ConnectionData {
+func (i *Instance) GetConnection(connID string) *ConnectionData {
 	i.mu.RLock()
 	defer i.mu.RUnlock()
 	for _, pool := range i.pools {
@@ -67,7 +67,7 @@ func (i *Instance) GetConnection(connID ConnectionID) *ConnectionData {
 	return nil
 }
 
-func (i *Instance) GetConnectionWithTimeout(connID ConnectionID, timeout time.Duration) (*ConnectionData, error) {
+func (i *Instance) GetConnectionWithTimeout(connID string, timeout time.Duration) (*ConnectionData, error) {
 	timeoutTimer := time.NewTimer(timeout)
 	ticker := time.NewTicker(50 * time.Millisecond)
 
@@ -94,10 +94,10 @@ func Pool(network NetworkType, bindPort bool) (*PoolData, error) {
 	return instByConf.GetPool(network, bindPort)
 }
 
-func Connection(connID ConnectionID) *ConnectionData {
+func Connection(connID string) *ConnectionData {
 	return instByConf.GetConnection(connID)
 }
 
-func ConnectionWithTimeout(connID ConnectionID, timeout time.Duration) (*ConnectionData, error) {
+func ConnectionWithTimeout(connID string, timeout time.Duration) (*ConnectionData, error) {
 	return instByConf.GetConnectionWithTimeout(connID, timeout)
 }

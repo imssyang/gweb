@@ -63,7 +63,7 @@ type PoolData struct {
 	ID            PoolID
 	API           *webrtc.API
 	ICEServerURLs []string
-	connections   map[ConnectionID]*ConnectionData
+	connections   map[string]*ConnectionData
 }
 
 func NewPoolData(poolID PoolID, iceServerURLs []string) (*PoolData, error) {
@@ -123,11 +123,11 @@ func NewPoolData(poolID PoolID, iceServerURLs []string) (*PoolData, error) {
 			webrtc.WithSettingEngine(settingEngine),
 			webrtc.WithMediaEngine(media)),
 		ICEServerURLs: iceServerURLs,
-		connections:   make(map[ConnectionID]*ConnectionData),
+		connections:   make(map[string]*ConnectionData),
 	}, nil
 }
 
-func (p *PoolData) CreateConnection(connID ConnectionID, iceServerURLs []string, handlers ...any) (*ConnectionData, error) {
+func (p *PoolData) CreateConnection(connID string, iceServerURLs []string, handlers ...any) (*ConnectionData, error) {
 	cd := p.GetConnection(connID)
 	if cd != nil {
 		return nil, fmt.Errorf("%s repeated.", connID)
@@ -199,7 +199,7 @@ func (p *PoolData) ChooseICEServerURLs(connURLs []string, confURLs []string) []s
 	return []string{} //  confURLs
 }
 
-func (p *PoolData) CloseConnection(connID ConnectionID) error {
+func (p *PoolData) CloseConnection(connID string) error {
 	cd := p.GetConnection(connID)
 	if cd == nil {
 		return fmt.Errorf("%s not found", connID)
@@ -218,7 +218,7 @@ func (p *PoolData) CloseConnection(connID ConnectionID) error {
 	return nil
 }
 
-func (p *PoolData) GetConnection(connID ConnectionID) *ConnectionData {
+func (p *PoolData) GetConnection(connID string) *ConnectionData {
 	p.mu.RLock()
 	defer p.mu.RUnlock()
 	cd, exists := p.connections[connID]

@@ -61,7 +61,7 @@ func NewRTCAnswerMSG(connID string) *RTCAnswerMSG {
 }
 
 func (m *RTCAnswerMSG) Answer(c *gin.Context) {
-	connID := webrtc_.ConnectionID(m.REQ.ConnID)
+	connID := m.REQ.ConnID
 	connData, err := webrtc_.ConnectionWithTimeout(connID, 3*time.Second)
 	if err != nil {
 		m.RSP.Err = fmt.Sprintf("Failed to find webrtc connection: %v", err)

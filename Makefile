@@ -38,6 +38,12 @@ $(TARGET): build
 ifeq ($(OS_TYPE), Linux)
 	patchelf --set-rpath '$$ORIGIN' deploy/$@
 	cp -v ${PYTHON_HOME}/lib/lib${PYTHON_VER}.so.1.0 deploy
+	cp -v ${FFMPEG_HOME}/lib/libmedia.so deploy
+	cp -v ${FFMPEG_HOME}/lib/libavcodec.so.61 deploy
+	cp -v ${FFMPEG_HOME}/lib/libavformat.so.61 deploy
+	cp -v ${FFMPEG_HOME}/lib/libavutil.so.59 deploy
+	cp -v ${FFMPEG_HOME}/lib/libswscale.so.8 deploy
+	cp -v ${FFMPEG_HOME}/lib/libswresample.so.5 deploy
 else ifeq ($(OS_TYPE), Darwin)
 	install_name_tool -add_rpath ${FFMPEG_HOME}/lib/ deploy/$(TARGET)
 endif

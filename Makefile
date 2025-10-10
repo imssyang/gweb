@@ -1,6 +1,10 @@
+GOENV_ROOT := /opt/go/goenv
+PYENV_ROOT := /opt/python/pyenv
+PATH := $(GOENV_ROOT)/bin:$(GOENV_ROOT)/shims:$(PYENV_ROOT)/bin:$(PYENV_ROOT)/shims:$(PATH)
+
 PROJECT_DIR=$(shell pwd)
-PYTHON_HOME=$(shell pyenv prefix)
-PYTHON_VER=$(shell ls ${PYTHON_HOME}/include)
+PYTHON_HOME=$(shell pyenv prefix 2>/dev/null || echo /opt/python/pyenv/versions/3.12.2)
+PYTHON_VER=$(shell ls ${PYTHON_HOME}/include 2>/dev/null || echo python3.12)
 FFMPEG_HOME=/opt/ffmpeg
 OS_TYPE := $(shell uname)
 
@@ -24,6 +28,7 @@ export CGO_LDFLAGS = ${LDFLAGS} \
 	-L${PYTHON_HOME}/lib -l${PYTHON_VER} \
 	-L${FFMPEG_HOME}/lib \
 	-lmedia -lavcodec -lavformat -lavutil -lswscale -lswresample
+export GOPROXY := https://goproxy.cn
 export PYTHONPATH=${PROJECT_DIR}/pkg
 
 TARGET = gweb
@@ -71,7 +76,7 @@ else ifeq ($(OS_TYPE), Darwin)
 endif
 
 init: env
-	mkdir -p public/img public/js public/css
+	mkdir -p public/img public/js public/css public/plugins
 
 ffmpeg:
 	mkdir -p pkg/ffmpeg/libmedia

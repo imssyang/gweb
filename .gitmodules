@@ -7,3 +7,6 @@
 [submodule "third_party/ffmpeg"]
 	path = third_party/ffmpeg
 	url = https://github.com/imssyang/ffmpeg.git
+[submodule "third_party/libmedia"]
+	path = third_party/libmedia
+	url = https://github.com/imssyang/libmedia.git

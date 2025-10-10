@@ -3,6 +3,8 @@ PYENV_ROOT := /opt/python/pyenv
 PATH := $(GOENV_ROOT)/bin:$(GOENV_ROOT)/shims:$(PYENV_ROOT)/bin:$(PYENV_ROOT)/shims:$(PATH)
 
 PROJECT_DIR=$(shell pwd)
+LIBMEDIA_HOME=${PROJECT_DIR}/third_party/libmedia/release
+
 PYTHON_HOME=$(shell pyenv prefix 2>/dev/null || echo /opt/python/pyenv/versions/3.12.2)
 PYTHON_VER=$(shell ls ${PYTHON_HOME}/include 2>/dev/null || echo python3.12)
 FFMPEG_HOME=/opt/ffmpeg
@@ -10,6 +12,7 @@ OS_TYPE := $(shell uname)
 
 ifeq ($(OS_TYPE), Linux)
 	CXXFLAGS = -std=c++2a
+	LDFLAGS=-Wl,-rpath,'$ORIGIN'
 	export LD_LIBRARY_PATH=${PYTHON_HOME}/lib:${FFMPEG_HOME}/lib
 else ifeq ($(OS_TYPE), Darwin)
 	CXXFLAGS = -std=c++20
@@ -27,6 +30,7 @@ export CGO_CXXFLAGS = ${CXXFLAGS} -O2 \
 export CGO_LDFLAGS = ${LDFLAGS} \
 	-L${PYTHON_HOME}/lib -l${PYTHON_VER} \
 	-L${FFMPEG_HOME}/lib \
+	-L${LIBMEDIA_HOME}/lib \
 	-lmedia -lavcodec -lavformat -lavutil -lswscale -lswresample
 export GOPROXY := https://goproxy.cn
 export PYTHONPATH=${PROJECT_DIR}/pkg
@@ -42,18 +46,19 @@ $(TARGET): build
 		pkg/format deploy
 ifeq ($(OS_TYPE), Linux)
 	patchelf --set-rpath '$$ORIGIN' deploy/$@
-	cp -v ${PYTHON_HOME}/lib/lib${PYTHON_VER}.so.1.0 deploy
-	cp -v ${FFMPEG_HOME}/lib/libmedia.so deploy
-	cp -v ${FFMPEG_HOME}/lib/libavcodec.so.61 deploy
-	cp -v ${FFMPEG_HOME}/lib/libavformat.so.61 deploy
-	cp -v ${FFMPEG_HOME}/lib/libavutil.so.59 deploy
-	cp -v ${FFMPEG_HOME}/lib/libswscale.so.8 deploy
-	cp -v ${FFMPEG_HOME}/lib/libswresample.so.5 deploy
+	find ${PYTHON_HOME}/lib -maxdepth 1 \( -type f -o -type l \) \
+		-regex '.*/lib${PYTHON_VER}\.so\.[0-9]+\.[0-9]+' \
+		-exec cp -v {} deploy/ \;
+	find ${FFMPEG_HOME}/lib -maxdepth 1 \( -type f -o -type l \) \
+		-regextype posix-extended \
+		-regex '.*/lib(avutil|avformat|avfilter|avcodec|swscale|swresample)\.so\.[0-9]+' \
+		-exec cp -v {} deploy/ \;
+	cp -v ${LIBMEDIA_HOME}/lib/libmedia.so deploy
 else ifeq ($(OS_TYPE), Darwin)
 	install_name_tool -add_rpath ${FFMPEG_HOME}/lib/ deploy/$(TARGET)
 endif
 
-build: ffmpeg formatui mediaui
+build: formatui mediaui
 	python -m compileall -b pkg/format
 	go build -x -v -o $(TARGET) cmd/gweb.go
 ifeq ($(OS_TYPE), Darwin)
@@ -77,10 +82,6 @@ endif
 
 init: env
 	mkdir -p public/img public/js public/css public/plugins
-
-ffmpeg:
-	mkdir -p pkg/ffmpeg/libmedia
-	cp third_party/ffmpeg/src/libmedia/*.h pkg/ffmpeg/libmedia
 
 formatui: init
 	cp third_party/formatui/dist/img/formatui.svg public/img/format.svg
@@ -114,9 +115,6 @@ clean: delffmpeg delformatui delmediaui
 	find deploy/* -name "gweb.yaml" -prune -o -exec rm -rf {} +
 	rm -rf gweb
 
-delffmpeg:
-	rm -rf pkg/ffmpeg/libmedia
-
 delformatui:
 	rm -rf public/img/format.svg \
 		public/js/format.min.js \
@@ -131,4 +129,4 @@ delmediaui:
 		public/js/mediaui.js \
 		public/css/mediaui.css
 
-.PYONY: all env init ffmpeg formatui mediaui run test clean
+.PYONY: all env init formatui mediaui run test clean

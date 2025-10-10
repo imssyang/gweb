@@ -8,7 +8,7 @@ import (
 )
 
 func NewMedia() uint32 {
-	return uint32(C.NewMedia())
+	return uint32(C.CreateMedia())
 }
 
 func NewDemuxer(mediaID uint32, uri string) (*Format, error) {

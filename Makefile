@@ -108,7 +108,7 @@ test: env
 	python -m unittest -v test_pyfmt.py && \
 	popd
 
-clean: delffmpeg delformatui delmediaui
+clean: delformatui delmediaui
 	find pkg -name "*.pyc" -type f -delete
 	find pkg -type d -name "__pycache__" -exec rm -r {} +
 	find tests -type d -name "__pycache__" -exec rm -r {} +

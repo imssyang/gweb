@@ -1,6 +1,9 @@
 GOENV_ROOT := /opt/go/goenv
 PYENV_ROOT := /opt/python/pyenv
-PATH := $(GOENV_ROOT)/bin:$(GOENV_ROOT)/shims:$(PYENV_ROOT)/bin:$(PYENV_ROOT)/shims:$(PATH)
+PATH := \
+	$(GOENV_ROOT)/bin:$(GOENV_ROOT)/shims: \
+	$(PYENV_ROOT)/bin:$(PYENV_ROOT)/shims: \
+	$(PATH)
 
 PROJECT_DIR=$(shell pwd)
 LIBMEDIA_HOME=${PROJECT_DIR}/third_party/libmedia/release
@@ -13,7 +16,7 @@ OS_TYPE := $(shell uname)
 ifeq ($(OS_TYPE), Linux)
 	CXXFLAGS = -std=c++2a
 	LDFLAGS=-Wl,-rpath,'$ORIGIN'
-	export LD_LIBRARY_PATH=${PYTHON_HOME}/lib:${FFMPEG_HOME}/lib
+	export LD_LIBRARY_PATH=${PYTHON_HOME}/lib:${FFMPEG_HOME}/lib:${LIBMEDIA_HOME}/lib
 else ifeq ($(OS_TYPE), Darwin)
 	CXXFLAGS = -std=c++20
 	LDFLAGS=-Wl,-no_warn_duplicate_libraries

@@ -1,10 +1,16 @@
 {
+    "cmake.ignoreCMakeListsMissing": true,
     "css.validate": false,
     "editor.formatOnSave": true,
     "editor.codeActionsOnSave": {
         "source.fixAll.eslint": "explicit"
     },
-    "eslint.validate": ["typescript", "javascript", "javascriptreact", "typescriptreact"],
+    "eslint.validate": [
+        "typescript",
+        "javascript",
+        "javascriptreact",
+        "typescriptreact"
+    ],
     "files.associations": {
         "iostream": "cpp",
         "array": "cpp",
@@ -87,8 +93,8 @@
         "stack": "cpp"
     },
     "git.ignoreLimitWarning": true,
-    "go.goroot": "/opt/go/goenv/versions/1.23.5",
-    "go.gopath": "/opt/go/gopath/1.23.5",
+    "go.goroot": "/opt/go/goenv/versions/1.23.12",
+    "go.gopath": "/opt/go/gopath/1.23.12",
     "go.toolsEnvVars": {
         "CGO_ENABLED": "1"
     },

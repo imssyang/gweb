@@ -28,6 +28,36 @@ and integrate systems more effectively.
 docker run -it -p 5005:5005 --rm ghcr.io/imssyang/gweb:latest
 ```
 
+### Compile
+
+```bash
+cmake -S . -B build 时直接显示
+
+make
+cmake --build build
+
+make run
+cmake --build build --target run
+
+make test
+ctest --test-dir build
+
+make clean
+cmake --build build --target clean
+
+make env
+cmake --build build --target env 
+
+make formatui
+cmake --build build --target formatui
+
+make mediaui
+cmake --build build --target mediaui
+
+make clean
+cmake --build build --target clean
+```
+
 ## Todo
 
 - Support more frontend

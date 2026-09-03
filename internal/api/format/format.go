@@ -7,7 +7,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/imssyang/gweb/pkg/format"
+	"github.com/imssyang/gweb/pkg/pyformat"
 )
 
 func Register(engine *gin.Engine) {
@@ -71,7 +71,7 @@ func (r *Router) mode() {
 				}[mode]
 			}
 
-			formatted, err := format.PyDumps(mode, string(body), indent, hasEscape)
+			formatted, err := pyformat.PyDumps(mode, string(body), indent, hasEscape)
 			if err != nil {
 				c.String(http.StatusBadRequest, "PyDumps error %v", err)
 				return

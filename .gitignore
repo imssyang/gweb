@@ -2,6 +2,7 @@
 **/*/__pycache__/
 **/*/node_modules/
 cmd/gweb
+build/
 deploy/*
 !deploy/gweb.yaml
 public/css/*

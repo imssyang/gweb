@@ -1,4 +1,4 @@
-package format
+package pyformat
 
 // #include <pyfmt.h>
 import "C"

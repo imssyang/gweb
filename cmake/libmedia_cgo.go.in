@@ -1,0 +1,8 @@
+package libmedia
+
+/*
+#cgo CFLAGS: -Wall -Wextra -I@LIBMEDIA_INCLUDE_DIR@ -I@FFMPEG_INCLUDE_DIR@
+#cgo CXXFLAGS: -std=c++20 -O2
+#cgo LDFLAGS: -L@LIBMEDIA_LIBRARY_DIR@ -lmedia -L@FFMPEG_LIBRARY_DIR@ -lavformat -lavcodec -lavutil -lswscale -lswresample
+*/
+import "C"

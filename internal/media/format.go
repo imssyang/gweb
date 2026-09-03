@@ -3,7 +3,7 @@ package media
 import (
 	"fmt"
 
-	"github.com/imssyang/gweb/pkg/ffmpeg"
+	"github.com/imssyang/gweb/pkg/libmedia"
 )
 
 type Format struct {
@@ -15,10 +15,10 @@ type Format struct {
 	BitRate   int64
 	Streams   map[int32]*Stream
 
-	ffFuncs ffmpeg.FormatFuncs
+	ffFuncs libmedia.FormatFuncs
 }
 
-func newFormatByFFmpeg(ffFormat *ffmpeg.Format) *Format {
+func newFormatByFFmpeg(ffFormat *libmedia.Format) *Format {
 	streams := make(map[int32]*Stream)
 	for _, stream := range ffFormat.Streams {
 		streams[stream.Index] = NewStreamByFFmpeg(stream)

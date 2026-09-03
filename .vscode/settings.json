@@ -1,4 +1,6 @@
 {
+    "C_Cpp.default.compileCommands": "${workspaceFolder}/third_party/libmedia/build/compile_commands.json",
+    "C_Cpp.loggingLevel": "Information",
     "cmake.ignoreCMakeListsMissing": true,
     "css.validate": false,
     "editor.formatOnSave": true,
@@ -93,17 +95,17 @@
         "stack": "cpp"
     },
     "git.ignoreLimitWarning": true,
-    "go.goroot": "/opt/go/goenv/versions/1.23.12",
-    "go.gopath": "/opt/go/gopath/1.23.12",
+    "go.goroot": "/opt/go/goenv/versions/1.24.8",
+    "go.gopath": "/opt/go/gopath/1.24.8",
     "go.toolsEnvVars": {
         "CGO_ENABLED": "1"
     },
+    "js/ts.tsdk.path": "node_modules/typescript/lib",
     "python.analysis.extraPaths": [
         "/opt/python/pyenv/versions/3.10.13/lib/python3.10/site-packages"
     ],
     "python.autoComplete.extraPaths": [
         "/opt/python/pyenv/versions/3.10.13/lib/python3.10/site-packages"
     ],
-    "tailwindCSS.validate": true,
-    "typescript.tsdk": "node_modules/typescript/lib"
+    "tailwindCSS.validate": true
 }

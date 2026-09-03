@@ -1,6 +1,6 @@
-package ffmpeg
+package libmedia
 
-// #include "libmedia/ffmpeg.h"
+// #include "libmedia/media.h"
 import "C"
 import (
 	"fmt"

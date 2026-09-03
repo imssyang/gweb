@@ -4,7 +4,7 @@ import (
 	"math/big"
 	"time"
 
-	"github.com/imssyang/gweb/pkg/ffmpeg"
+	"github.com/imssyang/gweb/pkg/libmedia"
 )
 
 type PacketSideData struct {
@@ -12,7 +12,7 @@ type PacketSideData struct {
 	Type string
 }
 
-func NewPacketSideDataByFFmpeg(ffSD *ffmpeg.PacketSideData) *PacketSideData {
+func NewPacketSideDataByFFmpeg(ffSD *libmedia.PacketSideData) *PacketSideData {
 	return &PacketSideData{
 		Data: ffSD.Data,
 		Type: ffSD.Type,
@@ -33,7 +33,7 @@ type Packet struct {
 	TimeBase    big.Rat
 }
 
-func NewPacketByFFmpeg(ffPacket *ffmpeg.Packet) *Packet {
+func NewPacketByFFmpeg(ffPacket *libmedia.Packet) *Packet {
 	sideDatas := make([]*PacketSideData, 0)
 	for _, sd := range ffPacket.SideDatas {
 		sideDatas = append(sideDatas, NewPacketSideDataByFFmpeg(sd))

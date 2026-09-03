@@ -3,7 +3,7 @@ package media
 import (
 	"math/big"
 
-	"github.com/imssyang/gweb/pkg/ffmpeg"
+	"github.com/imssyang/gweb/pkg/libmedia"
 )
 
 type Stream struct {
@@ -17,7 +17,7 @@ type Stream struct {
 	Codec     *Codec
 }
 
-func NewStreamByFFmpeg(ffStream *ffmpeg.Stream) *Stream {
+func NewStreamByFFmpeg(ffStream *libmedia.Stream) *Stream {
 	return &Stream{
 		MediaID:   ffStream.MediaID,
 		URI:       ffStream.URI,

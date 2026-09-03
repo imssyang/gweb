@@ -3,7 +3,7 @@ package media
 import (
 	"math/big"
 
-	"github.com/imssyang/gweb/pkg/ffmpeg"
+	"github.com/imssyang/gweb/pkg/libmedia"
 	"github.com/pion/webrtc/v4"
 )
 
@@ -22,7 +22,7 @@ type OnlyVideoCodec struct {
 	FrameDelay                  int32
 }
 
-func NewOnlyVideoCodecByFFmpeg(ffCodec *ffmpeg.OnlyVideoCodec) *OnlyVideoCodec {
+func NewOnlyVideoCodecByFFmpeg(ffCodec *libmedia.OnlyVideoCodec) *OnlyVideoCodec {
 	if ffCodec == nil {
 		return nil
 	}
@@ -51,7 +51,7 @@ type OnlyAudioCodec struct {
 	FrameSize     int32
 }
 
-func NewOnlyAudioCodecByFFmpeg(ffCodec *ffmpeg.OnlyAudioCodec) *OnlyAudioCodec {
+func NewOnlyAudioCodecByFFmpeg(ffCodec *libmedia.OnlyAudioCodec) *OnlyAudioCodec {
 	if ffCodec == nil {
 		return nil
 	}
@@ -81,7 +81,7 @@ type Codec struct {
 	Audio       *OnlyAudioCodec
 }
 
-func NewCodecByFFmpeg(ffCodec *ffmpeg.Codec) *Codec {
+func NewCodecByFFmpeg(ffCodec *libmedia.Codec) *Codec {
 	sideDatas := make([]*PacketSideData, 0)
 	for _, sd := range ffCodec.SideDatas {
 		sideDatas = append(sideDatas, NewPacketSideDataByFFmpeg(sd))

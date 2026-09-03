@@ -10,7 +10,7 @@ LIBMEDIA_HOME=${PROJECT_DIR}/third_party/libmedia/release
 
 PYTHON_HOME=$(shell pyenv prefix 2>/dev/null || echo /opt/python/pyenv/versions/3.12.2)
 PYTHON_VER=$(shell ls ${PYTHON_HOME}/include 2>/dev/null || echo python3.12)
-FFMPEG_HOME=/opt/ffmpeg
+FFMPEG_HOME=${PROJECT_DIR}/third_party/libmedia/deps/ffmpeg-7.1
 OS_TYPE := $(shell uname)
 
 ifeq ($(OS_TYPE), Linux)
@@ -25,10 +25,12 @@ endif
 export CGO_CFLAGS = -Wall -Wextra -O2 \
 	-I${PYTHON_HOME}/include/${PYTHON_VER} \
 	-I${FFMPEG_HOME}/include \
-	-I${PROJECT_DIR}/third_party
+	-I${PROJECT_DIR}/third_party \
+	-I${LIBMEDIA_HOME}/include
 export CGO_CXXFLAGS = ${CXXFLAGS} -O2 \
 	-I${PYTHON_HOME}/include/${PYTHON_VER} \
 	-I${FFMPEG_HOME}/include \
+	-I${LIBMEDIA_HOME}/include \
 	-I${PROJECT_DIR}/third_party
 export CGO_LDFLAGS = ${LDFLAGS} \
 	-L${PYTHON_HOME}/lib -l${PYTHON_VER} \

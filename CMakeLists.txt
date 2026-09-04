@@ -190,15 +190,17 @@ message(STATUS "LIBMEDIA_LIBRARY_DIR    : ${LIBMEDIA_LIBRARY_DIR}")
 if(APPLE)
 
     set(GLOBAL_ENV
+        "PYTHONPATH=${GWEB_PYTHONPATH}"
     )
 
     set(RUN_ENV
         "CGO_LDFLAGS=-Wl,-rpath,${LIBMEDIA_LIBRARY_DIR}"
     )
 
-else()
+elseif(UNIX AND NOT APPLE)
 
     set(GLOBAL_ENV
+        "PYTHONPATH=${GWEB_PYTHONPATH}"
     )
 
     set(RUN_ENV
@@ -364,6 +366,15 @@ add_custom_target(
         "${GWEB_BINARY_DIR}/${GWEB_TARGET}"
         "${GWEB_DEPLOY_DIR}/${GWEB_TARGET}"
 
+    COMMAND
+        rsync
+        -av
+        "--include=*/"
+        "--include=*.pyc"
+        "--exclude=*"
+        "${GWEB_SOURCE_DIR}/pkg/pyformat"
+        "${GWEB_DEPLOY_DIR}"
+
     COMMENT
         "Prepare gweb deploy directory"
 )
@@ -473,11 +484,11 @@ add_custom_target(
 if(GWEB_BUILD_TESTS)
 
     add_custom_target(
-        test_python_format
+        test_pyformat
 
         COMMAND
             "${CMAKE_COMMAND}" -E env
-            "PYTHONPATH=${GWEB_PYTHONPATH}"
+            "${GLOBAL_ENV}"
             "${Python3_EXECUTABLE}"
             -m unittest
             -v
@@ -485,7 +496,7 @@ if(GWEB_BUILD_TESTS)
 
         COMMAND
             "${CMAKE_COMMAND}" -E env
-            "PYTHONPATH=${GWEB_PYTHONPATH}"
+            "${GLOBAL_ENV}"
             "${Python3_EXECUTABLE}"
             -m unittest
             -v
@@ -493,7 +504,7 @@ if(GWEB_BUILD_TESTS)
 
         COMMAND
             "${CMAKE_COMMAND}" -E env
-            "PYTHONPATH=${GWEB_PYTHONPATH}"
+            "${GLOBAL_ENV}"
             "${Python3_EXECUTABLE}"
             -m unittest
             -v
@@ -510,3 +521,87 @@ if(GWEB_BUILD_TESTS)
     )
 
 endif()
+
+# ---------------------------------------------------------
+# GWeb clean
+# ---------------------------------------------------------
+
+add_custom_target(
+    clean_formatui
+    
+    COMMAND
+        "${CMAKE_COMMAND}" -E rm -f
+        "${GWEB_SOURCE_DIR}/public/img/format.svg"
+        "${GWEB_SOURCE_DIR}/public/js/format.min.js"
+        "${GWEB_SOURCE_DIR}/public/css/format.min.css"
+
+    COMMAND
+        "${CMAKE_COMMAND}" -E rm -rf
+        "${GWEB_SOURCE_DIR}/public/plugins/bootstrap-icons@*"
+        "${GWEB_SOURCE_DIR}/public/plugins/clipboard@*"
+        "${GWEB_SOURCE_DIR}/public/plugins/json5@*"
+        "${GWEB_SOURCE_DIR}/public/plugins/w2ui@*"
+
+    COMMENT "Delete format UI files"
+)
+
+add_custom_target(
+    clean_mediaui
+    
+    COMMAND
+        "${CMAKE_COMMAND}" -E rm -f
+        "${GWEB_SOURCE_DIR}/public/img/mediaui.svg"
+        "${GWEB_SOURCE_DIR}/public/js/mediaui.js"
+        "${GWEB_SOURCE_DIR}/public/css/mediaui.css"
+
+    COMMENT "Delete media UI files"
+)
+
+add_custom_target(
+    clean
+
+    DEPENDS
+        clean_formatui
+        clean_mediaui
+
+    COMMAND
+        find
+        "${GWEB_SOURCE_DIR}/pkg"
+        -name "*.pyc"
+        -type f
+        -delete
+
+    COMMAND
+        find
+        "${GWEB_SOURCE_DIR}/pkg"
+        -type d
+        -name "__pycache__"
+        -exec
+        rm -r
+        "{}"
+        "+"
+
+    COMMAND
+        find
+        "${GWEB_SOURCE_DIR}/tests"
+        -type d
+        -name "__pycache__"
+        -exec
+        rm -r
+        "{}"
+        "+"
+
+    COMMAND
+        find
+        "${GWEB_SOURCE_DIR}/deploy"
+        -mindepth 1
+        -type f
+        ! -name "gweb.yaml"
+        -delete
+
+    COMMAND
+        "${CMAKE_COMMAND}" -E rm -rf
+        "${GWEB_SOURCE_DIR}/gweb"
+
+    COMMENT "Clean project"
+)

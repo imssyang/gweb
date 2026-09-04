@@ -53,10 +53,10 @@ public:
         }
 
 		py::scoped_interpreter guard{};
-		py::module_ pyfmt = py::module_::import("format");
+		py::module_ pyfmt = py::module_::import("pyformat");
 		py::object result = pyfmt.attr("dumps")(mode, data, indent, has_escape);
 		if (result.is_none()) {
-            py::print("[CGO] python format.dumps(", mode, ") fail.");
+            py::print("[CGO] python pyformat.dumps(", mode, ") fail.");
 			return "";
 		}
 

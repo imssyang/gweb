@@ -1,5 +1,5 @@
 import unittest
-from format import Command
+from pyformat import Command
 
 
 class PycmdTestCase(unittest.TestCase):

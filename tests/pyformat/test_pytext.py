@@ -1,5 +1,5 @@
 import unittest
-from format import JsonText, AstText
+from pyformat import JsonText, AstText
 
 
 class PytextTestCase(unittest.TestCase):

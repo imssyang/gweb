@@ -6,6 +6,7 @@ project(gweb LANGUAGES NONE)
 # Options
 # ---------------------------------------------------------
 
+option(GWEB_BUILD_LIBMEDIA "Build libmedia from source" OFF)
 option(GWEB_BUILD_TESTS "Run gweb tests" ON)
 
 # ---------------------------------------------------------
@@ -61,13 +62,8 @@ execute_process(
     OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
-set(GO_CGO_ENV
-    "PYTHONPATH=${GWEB_PYTHONPATH}"
-)
-
 message(STATUS "GO_EXECUTABLE     : ${GO_EXECUTABLE}")
 message(STATUS "GO_VERSION        : ${GO_VERSION}")
-message(STATUS "GO_CGO_ENV        : ${GO_CGO_ENV}")
 
 # ---------------------------------------------------------
 # Python
@@ -104,6 +100,7 @@ configure_file(
 
 message(STATUS "Python3_EXECUTABLE   : ${Python3_EXECUTABLE}")
 message(STATUS "Python3_INCLUDE_DIRS : ${Python3_INCLUDE_DIRS}")
+message(STATUS "Python3_LIBRARY_DIRS : ${Python3_LIBRARY_DIRS}")
 message(STATUS "Python3_LIBRARIES    : ${Python3_LIBRARIES}")
 message(STATUS "Python3_VERSION      : ${Python3_VERSION}")
 message(STATUS "Python3_CGO_INCLUDE_DIRS  : ${Python3_CGO_INCLUDE_DIRS}")
@@ -114,7 +111,7 @@ message(STATUS "Python3_CGO_LIBRARIES     : ${Python3_CGO_LIBRARIES}")
 # ---------------------------------------------------------
 
 set(FFMPEG_ROOT
-    "${GWEB_SOURCE_DIR}/third_party/libmedia/deps/ffmpeg-7.1"
+    "${GWEB_THIRD_PARTY_DIR}/libmedia/deps/ffmpeg-7.1"
     CACHE PATH "FFmpeg root directory"
 )
 
@@ -130,9 +127,8 @@ message(STATUS "FFMPEG_ROOT          : ${FFMPEG_ROOT}")
 message(STATUS "FFMPEG_INCLUDE_DIR   : ${FFMPEG_INCLUDE_DIR}")
 message(STATUS "FFMPEG_LIBRARY_DIR   : ${FFMPEG_LIBRARY_DIR}")
 
-
 # ---------------------------------------------------------
-# Build libmedia as part of this CMake project.
+# Media Library
 # ---------------------------------------------------------
 
 set(MEDIA_BUILD_TESTS OFF CACHE BOOL
@@ -141,21 +137,41 @@ set(MEDIA_BUILD_TESTS OFF CACHE BOOL
 )
 
 set(LIBMEDIA_ROOT
-    "${GWEB_SOURCE_DIR}/third_party/libmedia"
+    "${GWEB_THIRD_PARTY_DIR}/libmedia"
 )
 
 set(LIBMEDIA_INCLUDE_DIR
     "${LIBMEDIA_ROOT}/include"
 )
 
-set(LIBMEDIA_LIBRARY_DIR
-    "${GWEB_BINARY_DIR}/libmedia"
-)
+if(GWEB_BUILD_LIBMEDIA)
 
-add_subdirectory(
-    "${LIBMEDIA_ROOT}"
-    "${LIBMEDIA_LIBRARY_DIR}"
-)
+    set(LIBMEDIA_LIBRARY_DIR
+        "${GWEB_BINARY_DIR}/libmedia"
+    )
+
+    add_subdirectory(
+        "${LIBMEDIA_ROOT}"
+        "${LIBMEDIA_LIBRARY_DIR}"
+    )
+
+else()
+
+    set(LIBMEDIA_LIBRARY_DIR
+        "${LIBMEDIA_ROOT}/build"
+    )
+
+    add_library(media_static STATIC IMPORTED)
+
+    set_target_properties(media_static PROPERTIES
+        IMPORTED_LOCATION
+            "${LIBMEDIA_LIBRARY_DIR}/libmedia.a"
+
+        INTERFACE_INCLUDE_DIRECTORIES
+            "${LIBMEDIA_INCLUDE_DIR}"
+    )
+
+endif()
 
 configure_file(
     "${GWEB_SOURCE_DIR}/cmake/libmedia_cgo.go.in"
@@ -163,9 +179,36 @@ configure_file(
     @ONLY
 )
 
-message(STATUS "LIBMEDIA_ROOT          : ${LIBMEDIA_ROOT}")
-message(STATUS "LIBMEDIA_INCLUDE_DIR   : ${LIBMEDIA_INCLUDE_DIR}")
-message(STATUS "LIBMEDIA_LIBRARY_DIR   : ${LIBMEDIA_LIBRARY_DIR}")
+message(STATUS "LIBMEDIA_ROOT           : ${LIBMEDIA_ROOT}")
+message(STATUS "LIBMEDIA_INCLUDE_DIR    : ${LIBMEDIA_INCLUDE_DIR}")
+message(STATUS "LIBMEDIA_LIBRARY_DIR    : ${LIBMEDIA_LIBRARY_DIR}")
+
+# ---------------------------------------------------------
+# Environment
+# ---------------------------------------------------------
+
+if(APPLE)
+
+    set(GLOBAL_ENV
+    )
+
+    set(RUN_ENV
+        "CGO_LDFLAGS=-Wl,-rpath,${LIBMEDIA_LIBRARY_DIR}"
+    )
+
+else()
+
+    set(GLOBAL_ENV
+    )
+
+    set(RUN_ENV
+        "LD_LIBRARY_PATH=${Python3_LIBRARY_DIRS}:${FFMPEG_LIBRARY_DIR}:${LIBMEDIA_LIBRARY_DIR}"
+    )
+
+endif()
+
+message(STATUS "GLOBAL_ENV         : ${GLOBAL_ENV}")
+message(STATUS "RUN_ENV            : ${RUN_ENV}")
 
 # ---------------------------------------------------------
 # Python compileall
@@ -281,7 +324,7 @@ add_custom_target(
 
     COMMAND
         ${CMAKE_COMMAND} -E env
-        ${GO_CGO_ENV}
+        ${GLOBAL_ENV}
         "${GO_EXECUTABLE}"
         build
         -v
@@ -302,32 +345,65 @@ add_custom_target(
         "Build gweb"
 )
 
+# ---------------------------------------------------------
+# GWeb deploy
+# ---------------------------------------------------------
+
+add_custom_target(
+    deploy
+
+    DEPENDS
+        ${GWEB_TARGET}
+
+    COMMAND
+        "${CMAKE_COMMAND}" -E make_directory
+        "${GWEB_DEPLOY_DIR}/lib"
+
+    COMMAND
+        "${CMAKE_COMMAND}" -E copy
+        "${GWEB_BINARY_DIR}/${GWEB_TARGET}"
+        "${GWEB_DEPLOY_DIR}/${GWEB_TARGET}"
+
+    COMMENT
+        "Prepare gweb deploy directory"
+)
+
 # MacOS configuration
 if(APPLE)
 
-    find_program(
-        INSTALL_NAME_TOOL
-        NAMES install_name_tool
-        REQUIRED
-    )
+    if(NOT GWEB_BUILD_LIBMEDIA)
 
-    #add_custom_command(
-    #    TARGET
-    #        ${GWEB_TARGET}
-    #    POST_BUILD
-    #    COMMAND
-    #        "${INSTALL_NAME_TOOL}"
-    #        -add_rpath
-    #        "${FFMPEG_LIBRARY_DIR}"
-    #        "${GWEB_BINARY_DIR}/${GWEB_TARGET}"
-    #    COMMENT
-    #        "Add FFmpeg RPATH to gweb"
-    #)
+        find_program(
+            INSTALL_NAME_TOOL
+            NAMES install_name_tool
+            REQUIRED
+        )
 
-endif()
+        add_custom_command(
+            TARGET
+                deploy
+
+            POST_BUILD
+
+            COMMAND
+                "${CMAKE_COMMAND}" -E copy
+                "${LIBMEDIA_LIBRARY_DIR}/libmedia.dylib"
+                "${GWEB_DEPLOY_DIR}/lib/libmedia.dylib"
+
+            COMMAND
+                "${INSTALL_NAME_TOOL}"
+                -add_rpath
+                "@executable_path/lib"
+                "${GWEB_DEPLOY_DIR}/${GWEB_TARGET}"
+
+            COMMENT
+                "Add RPATH to gweb when deploy"
+        )
+
+    endif()
 
 # Linux configuration
-if(UNIX AND NOT APPLE)
+elseif(UNIX AND NOT APPLE)
 
     find_program(
         PATCHELF_EXECUTABLE
@@ -366,27 +442,13 @@ endif()
 # GWeb run
 # ---------------------------------------------------------
 
-if(APPLE)
-
-    set(GWEB_RUN_LIBRARY_PATH
-        "${FFMPEG_LIBRARY_DIR}"
-    )
-
-else()
-
-    set(GWEB_RUN_LIBRARY_PATH
-        "${Python3_LIBRARY_DIRS}:${FFMPEG_LIBRARY_DIR}:${GWEB_BINARY_DIR}/libmedia"
-    )
-
-endif()
-
 add_custom_target(
     run
 
     COMMAND
         ${CMAKE_COMMAND} -E env
-        ${GO_CGO_ENV}
-        "LD_LIBRARY_PATH=${GWEB_RUN_LIBRARY_PATH}"
+        ${GLOBAL_ENV}
+        ${RUN_ENV}
         "${GO_EXECUTABLE}"
         run
         "cmd/gweb.go"
@@ -419,7 +481,7 @@ if(GWEB_BUILD_TESTS)
             "${Python3_EXECUTABLE}"
             -m unittest
             -v
-            tests/format/test_pytext.py
+            tests/pyformat/test_pytext.py
 
         COMMAND
             "${CMAKE_COMMAND}" -E env
@@ -427,7 +489,7 @@ if(GWEB_BUILD_TESTS)
             "${Python3_EXECUTABLE}"
             -m unittest
             -v
-            tests/format/test_pycmd.py
+            tests/pyformat/test_pycmd.py
 
         COMMAND
             "${CMAKE_COMMAND}" -E env
@@ -435,7 +497,7 @@ if(GWEB_BUILD_TESTS)
             "${Python3_EXECUTABLE}"
             -m unittest
             -v
-            tests/format/test_pyfmt.py
+            tests/pyformat/test_pyfmt.py
 
         WORKING_DIRECTORY
             "${GWEB_SOURCE_DIR}"
@@ -444,30 +506,7 @@ if(GWEB_BUILD_TESTS)
             python_compile
 
         COMMENT
-            "Run format tests"
+            "Run pyformat tests"
     )
 
 endif()
-
-# ---------------------------------------------------------
-# GWeb deploy
-# ---------------------------------------------------------
-
-add_custom_target(
-    deploy
-
-    DEPENDS
-        ${GWEB_TARGET}
-
-    COMMAND
-        "${CMAKE_COMMAND}" -E make_directory
-        "${GWEB_DEPLOY_DIR}"
-
-    COMMAND
-        "${CMAKE_COMMAND}" -E copy
-        "${GWEB_BINARY_DIR}/${GWEB_TARGET}"
-        "${GWEB_DEPLOY_DIR}/${GWEB_TARGET}"
-
-    COMMENT
-        "Prepare gweb deploy directory"
-)

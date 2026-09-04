@@ -98,6 +98,7 @@
     "go.goroot": "/opt/go/goenv/versions/1.24.8",
     "go.gopath": "/opt/go/gopath/1.24.8",
     "go.toolsEnvVars": {
+        "CGO_CXXFLAGS": "-I${workspaceFolder}/third_party",
         "CGO_ENABLED": "1"
     },
     "js/ts.tsdk.path": "node_modules/typescript/lib",

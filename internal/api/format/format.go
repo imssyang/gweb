@@ -61,9 +61,10 @@ func (r *Router) mode() {
 		case "json", "python", "command":
 			action := c.Param("action")
 			indent := 0
-			if action == "contract" {
+			switch action {
+			case "contract":
 				indent = 0
-			} else if action == "expand" {
+			case "expand":
 				indent = map[string]int{
 					"json":    4,
 					"python":  1,

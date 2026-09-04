@@ -216,9 +216,7 @@ message(STATUS "RUN_ENV            : ${RUN_ENV}")
 # Python compileall
 # ---------------------------------------------------------
 
-add_custom_target(
-    python_compile
-
+add_custom_target(compile_python
     COMMAND
         "${Python3_EXECUTABLE}"
         -m compileall
@@ -232,13 +230,33 @@ add_custom_target(
         "Compile Python files"
 )
 
+add_custom_target(clean_python
+    COMMAND
+        find "${GWEB_SOURCE_DIR}/pkg"
+        -name "*.pyc"
+        -type f
+        -delete
+
+    COMMAND
+        find "${GWEB_SOURCE_DIR}/pkg"
+        -type d
+        -name "__pycache__"
+        -exec rm -r "{}" "+"
+
+    COMMAND
+        find "${GWEB_SOURCE_DIR}/tests"
+        -type d
+        -name "__pycache__"
+        -exec rm -r "{}" "+"
+
+    COMMENT "Clean python caches"
+)
+
 # ---------------------------------------------------------
 # FormatUI assets
 # ---------------------------------------------------------
 
-add_custom_target(
-    formatui
-
+add_custom_target(copy_formatui
     COMMAND
         "${CMAKE_COMMAND}" -E make_directory
         "${GWEB_SOURCE_DIR}/public/img"
@@ -279,13 +297,28 @@ add_custom_target(
         "Copy formatui assets"
 )
 
+add_custom_target(clean_formatui
+    COMMAND
+        "${CMAKE_COMMAND}" -E rm -f
+        "${GWEB_SOURCE_DIR}/public/img/format.svg"
+        "${GWEB_SOURCE_DIR}/public/js/format.min.js"
+        "${GWEB_SOURCE_DIR}/public/css/format.min.css"
+
+    COMMAND
+        "${CMAKE_COMMAND}" -E rm -rf
+        "${GWEB_SOURCE_DIR}/public/plugins/bootstrap-icons@*"
+        "${GWEB_SOURCE_DIR}/public/plugins/clipboard@*"
+        "${GWEB_SOURCE_DIR}/public/plugins/json5@*"
+        "${GWEB_SOURCE_DIR}/public/plugins/w2ui@*"
+
+    COMMENT "Delete format UI files"
+)
+
 # ---------------------------------------------------------
 # MediaUI assets
 # ---------------------------------------------------------
 
-add_custom_target(
-    mediaui
-
+add_custom_target(copy_mediaui
     COMMAND
         "${CMAKE_COMMAND}" -E make_directory
         "${GWEB_SOURCE_DIR}/public/img"
@@ -317,13 +350,21 @@ add_custom_target(
         "Copy mediaui assets"
 )
 
+add_custom_target(clean_mediaui
+    COMMAND
+        "${CMAKE_COMMAND}" -E rm -f
+        "${GWEB_SOURCE_DIR}/public/img/mediaui.svg"
+        "${GWEB_SOURCE_DIR}/public/js/mediaui.js"
+        "${GWEB_SOURCE_DIR}/public/css/mediaui.css"
+
+    COMMENT "Delete media UI files"
+)
+
 # ---------------------------------------------------------
 # GWeb build
 # ---------------------------------------------------------
 
-add_custom_target(
-    ${GWEB_TARGET} ALL
-
+add_custom_target(${GWEB_TARGET} ALL
     COMMAND
         ${CMAKE_COMMAND} -E env
         ${GLOBAL_ENV}
@@ -339,9 +380,9 @@ add_custom_target(
 
     DEPENDS
         media_static
-        python_compile
-        formatui
-        mediaui
+        compile_python
+        copy_formatui
+        copy_mediaui
 
     COMMENT
         "Build gweb"
@@ -351,9 +392,7 @@ add_custom_target(
 # GWeb deploy
 # ---------------------------------------------------------
 
-add_custom_target(
-    deploy
-
+add_custom_target(deploy_gweb
     DEPENDS
         ${GWEB_TARGET}
 
@@ -449,22 +488,30 @@ elseif(UNIX AND NOT APPLE)
 
 endif()
 
+add_custom_target(clean_deploy
+    COMMAND
+        find "${GWEB_SOURCE_DIR}/deploy"
+        -mindepth 1
+        -name "gweb.yaml"
+        -prune
+        -o
+        -exec rm -rf "{}" "+"
+
+    COMMENT "Clean deploy files"
+)
+
 # ---------------------------------------------------------
 # GWeb run
 # ---------------------------------------------------------
 
-add_custom_target(
-    run
-
+add_custom_target(run_gweb
     COMMAND
         ${CMAKE_COMMAND} -E env
         ${GLOBAL_ENV}
         ${RUN_ENV}
         "${GO_EXECUTABLE}"
-        run
-        "cmd/gweb.go"
-        -p
-        5015
+        run "cmd/gweb.go"
+        -p 5015
         --debug
 
     WORKING_DIRECTORY
@@ -478,14 +525,30 @@ add_custom_target(
 )
 
 # ---------------------------------------------------------
+# GWeb clean
+# ---------------------------------------------------------
+
+add_custom_target(clean_gweb
+    DEPENDS
+        clean_python
+        clean_formatui
+        clean_mediaui
+        clean_deploy
+
+    COMMAND
+        "${CMAKE_COMMAND}" -E rm -rf
+        "${GWEB_SOURCE_DIR}/gweb"
+
+    COMMENT "Clean project"
+)
+
+# ---------------------------------------------------------
 # GWeb tests
 # ---------------------------------------------------------
 
 if(GWEB_BUILD_TESTS)
 
-    add_custom_target(
-        test_pyformat
-
+    add_custom_target(test_pyformat
         COMMAND
             "${CMAKE_COMMAND}" -E env
             "${GLOBAL_ENV}"
@@ -514,94 +577,10 @@ if(GWEB_BUILD_TESTS)
             "${GWEB_SOURCE_DIR}"
 
         DEPENDS
-            python_compile
+            compile_python
 
         COMMENT
             "Run pyformat tests"
     )
 
 endif()
-
-# ---------------------------------------------------------
-# GWeb clean
-# ---------------------------------------------------------
-
-add_custom_target(
-    clean_formatui
-    
-    COMMAND
-        "${CMAKE_COMMAND}" -E rm -f
-        "${GWEB_SOURCE_DIR}/public/img/format.svg"
-        "${GWEB_SOURCE_DIR}/public/js/format.min.js"
-        "${GWEB_SOURCE_DIR}/public/css/format.min.css"
-
-    COMMAND
-        "${CMAKE_COMMAND}" -E rm -rf
-        "${GWEB_SOURCE_DIR}/public/plugins/bootstrap-icons@*"
-        "${GWEB_SOURCE_DIR}/public/plugins/clipboard@*"
-        "${GWEB_SOURCE_DIR}/public/plugins/json5@*"
-        "${GWEB_SOURCE_DIR}/public/plugins/w2ui@*"
-
-    COMMENT "Delete format UI files"
-)
-
-add_custom_target(
-    clean_mediaui
-    
-    COMMAND
-        "${CMAKE_COMMAND}" -E rm -f
-        "${GWEB_SOURCE_DIR}/public/img/mediaui.svg"
-        "${GWEB_SOURCE_DIR}/public/js/mediaui.js"
-        "${GWEB_SOURCE_DIR}/public/css/mediaui.css"
-
-    COMMENT "Delete media UI files"
-)
-
-add_custom_target(
-    clean
-
-    DEPENDS
-        clean_formatui
-        clean_mediaui
-
-    COMMAND
-        find
-        "${GWEB_SOURCE_DIR}/pkg"
-        -name "*.pyc"
-        -type f
-        -delete
-
-    COMMAND
-        find
-        "${GWEB_SOURCE_DIR}/pkg"
-        -type d
-        -name "__pycache__"
-        -exec
-        rm -r
-        "{}"
-        "+"
-
-    COMMAND
-        find
-        "${GWEB_SOURCE_DIR}/tests"
-        -type d
-        -name "__pycache__"
-        -exec
-        rm -r
-        "{}"
-        "+"
-
-    COMMAND
-        find
-        "${GWEB_SOURCE_DIR}/deploy"
-        -mindepth 1
-        -type f
-        ! -name "gweb.yaml"
-        -delete
-
-    COMMAND
-        "${CMAKE_COMMAND}" -E rm -rf
-        "${GWEB_SOURCE_DIR}/gweb"
-
-    COMMENT "Clean project"
-)

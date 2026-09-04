@@ -431,7 +431,7 @@ if(APPLE)
 
         add_custom_command(
             TARGET
-                deploy
+                deploy_gweb
 
             POST_BUILD
 
